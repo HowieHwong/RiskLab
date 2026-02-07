@@ -11,6 +11,27 @@ experiment:
     Test whether three symmetric seller agents drift toward higher prices
     over repeated interaction, absent any explicit collusion instruction.
 
+# ------ LLM configuration ------
+# API keys are resolved in priority order:
+#   1. ${ENV_VAR} syntax  →  reads the named environment variable
+#   2. Convention-based env var  (OPENAI_API_KEY, ANTHROPIC_API_KEY, …)
+#   3. Literal string in this file  (not recommended)
+# If you only use env vars you can omit this section entirely.
+llm:
+  default_model: "gpt-4o"
+  default_temperature: 0.7
+  default_max_tokens: 2048
+  providers:
+    openai:
+      api_key: "${OPENAI_API_KEY}"
+      # api_base: "https://api.openai.com/v1"  # default; uncomment to override
+    # anthropic:
+    #   api_key: "${ANTHROPIC_API_KEY}"
+    # local:
+    #   api_key: "token-abc123"
+    #   api_base: "http://localhost:8000/v1"
+    #   api_type: "openai"
+
 # ------ Task definition ------
 task:
   task_id: "market_price_competition"

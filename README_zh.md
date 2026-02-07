@@ -20,8 +20,10 @@
 mas_risk_toolkit/
 ├── topology.py            # 通信拓扑（邻接矩阵）与信息流定义
 ├── tasks.py               # 任务定义（智能体需要完成什么）
+├── llm.py                 # LLM 配置、提供商管理与统一调用客户端
 ├── agents/                # 智能体抽象与角色管理
 │   ├── base.py            #   Agent 基类（策略 + 角色 + 局部视野 + 激励）
+│   ├── llm_agent.py       #   LLMAgent — 基于 LLM API 的具体智能体实现
 │   └── registry.py        #   可扩展的智能体类型注册表
 ├── environments/          # 任务 + 资源 + 规则环境
 │   ├── base.py            #   Environment 基类（状态 + 约束 + 转移动力学）
@@ -101,9 +103,104 @@ mas_risk_toolkit/
 
 ```bash
 pip install -e .
+
+# 可选：安装 LLM 提供商库
+pip install -e ".[openai]"       # OpenAI 模型（gpt-4o, o1, …）
+pip install -e ".[anthropic]"    # Anthropic 模型（claude-3-opus, …）
+pip install -e ".[all_llm]"     # 所有支持的 LLM 提供商
 ```
 
-### 2. 核心概念
+### 2. 配置 LLM API Key
+
+API Key 按以下**优先级**解析：
+
+1. **`${ENV_VAR}` 语法**（YAML 中）— 读取指定的环境变量
+2. **约定环境变量** — 例如 `openai` 提供商自动读取 `OPENAI_API_KEY`
+3. **字面量字符串**（不推荐，避免将密钥提交到代码仓库）
+
+**最简方式 — 仅使用环境变量（无需任何 YAML 配置）：**
+
+```bash
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+**显式 YAML 配置（写在实验配置文件中）：**
+
+```yaml
+llm:
+  default_model: "gpt-4o"
+  default_temperature: 0.7
+  default_max_tokens: 2048
+  providers:
+    openai:
+      api_key: "${OPENAI_API_KEY}"              # 环境变量引用
+      # api_base: "https://api.openai.com/v1"   # 默认值；代理时覆盖
+    anthropic:
+      api_key: "${ANTHROPIC_API_KEY}"
+    local:                                       # 例如 vLLM / Ollama
+      api_base: "http://localhost:8000/v1"
+      api_key: "not-needed"
+      api_type: "openai"                         # OpenAI 兼容协议
+```
+
+**逐智能体覆盖** — 每个智能体可以使用不同的模型、提供商或温度：
+
+```yaml
+agents:
+  - agent_id: "seller_1"
+    role: "seller"
+    model: "gpt-4o"                 # → 自动检测为 openai 提供商
+    objective: "selfish"
+    temperature: 0.9                # 逐智能体温度覆盖
+  - agent_id: "seller_2"
+    role: "seller"
+    model: "claude-3-opus"          # → 自动检测为 anthropic
+    objective: "selfish"
+  - agent_id: "seller_3"
+    role: "seller"
+    model: "local/my-finetuned"     # → 显式 "provider/model" 语法
+    objective: "selfish"
+    api_base: "http://gpu-box:8000/v1"  # 逐智能体 API 地址覆盖
+```
+
+**Python API：**
+
+```python
+from mas_risk_toolkit.llm import LLMConfig, LLMClient
+
+# 方式 A：从环境变量自动读取
+config = LLMConfig.from_env()
+
+# 方式 B：从字典构建（例如从 YAML 解析得到）
+config = LLMConfig.from_dict({
+    "default_model": "gpt-4o",
+    "providers": {
+        "openai": {"api_key": "${OPENAI_API_KEY}"},
+    },
+})
+
+# 统一客户端 — 自动分发到正确的提供商
+client = LLMClient(config)
+reply = client.chat(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+```
+
+**提供商自动检测** — 工具包根据模型名前缀自动映射到提供商：
+
+| 模型前缀 | 自动检测提供商 |
+|----------|--------------|
+| `gpt-*`, `o1`, `o3`, `o4` | `openai` |
+| `claude-*` | `anthropic` |
+| `deepseek-*` | `deepseek` |
+| `gemini-*` | `google` |
+| `glm-*` | `zhipu` |
+| `mistral-*`, `mixtral-*` | `mistral` |
+| `provider/model` | 显式指定 `provider` |
+
+### 3. 核心概念
 
 MAS-Risk-Toolkit 中的一次实验由五个构建块组成：
 
@@ -115,7 +212,7 @@ MAS-Risk-Toolkit 中的一次实验由五个构建块组成：
 | **智能体 (Agent)** | *参与者* — LLM 或规则策略，各自有角色 + 目标 + 记忆 | 策略函数 |
 | **任务 (Task)** | *要做什么* — 描述、成功标准、约束、标准答案 | 实验目标 |
 
-### 3. 定义通信拓扑
+### 4. 定义通信拓扑
 
 拓扑使用 **邻接矩阵** 来指定哪个智能体可以向哪个智能体发送消息。对应论文中的形式化定义 `C : N × N × ℕ → {0,1}`。
 
@@ -202,7 +299,7 @@ topo.can_send("A", "C", t=4)  # True  (使用默认)
 topo.can_send("A", "C", t=5)  # False (使用第 5 轮覆盖)
 ```
 
-### 4. 定义信息流
+### 5. 定义信息流
 
 信息流指定静态邻接矩阵之上的 *动态* 部分 — 信息从哪里进入、如何传播、在哪里退出、何时停止。
 
@@ -389,7 +486,7 @@ topology:
         node: "C"
 ```
 
-### 5. 定义任务
+### 6. 定义任务
 
 任务描述智能体 *要完成什么*，独立于环境（世界）和协议（怎么交互）。
 
@@ -494,7 +591,7 @@ task:
   input_key: "documents"
 ```
 
-### 6. 把所有组件连起来
+### 7. 把所有组件连起来
 
 #### 方式 A：纯代码（完全控制）
 
@@ -620,7 +717,7 @@ risks:
 seeds: 5
 ```
 
-### 7. 任务评估
+### 8. 任务评估
 
 任务评估与风险评估是分开的。`TaskEvaluator` 判断智能体是否 *完成了目标*，而 `Risk.detect()` 判断是否 *出现了涌现风险*。
 
@@ -637,7 +734,7 @@ print(result.details)   # {"criteria_results": {"round_budget": True, ...}}
 
 内置评判标准：`task_completed`、`round_budget`、`output_match`、`numeric_threshold`。如需自定义逻辑，继承 `TaskEvaluator` 并重写 `evaluate` 方法。
 
-### 8. 检查配置（CLI 工具）
+### 9. 检查配置（CLI 工具）
 
 在正式运行实验之前，可以使用 **inspect_config** 脚本一键查看 YAML 配置中的完整 MAS 结构——拓扑、信息流图、模拟发言顺序、智能体表、风险检测器等。
 
@@ -673,7 +770,7 @@ inspect_config(my_config_dict)
 | 评估指标 (Metrics) | 指标名 + 类别 |
 | 可复现性 | 种子数 × 输入数 = 总运行次数 |
 
-### 9. 示例实验配置
+### 10. 示例实验配置
 
 工具包内置了四个示例配置：
 

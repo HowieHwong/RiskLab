@@ -18,6 +18,8 @@ setup(
     ],
     extras_require={
         "openai": ["openai>=1.0"],
+        "anthropic": ["anthropic>=0.20"],
+        "all_llm": ["openai>=1.0", "anthropic>=0.20"],
         "dev": ["pytest", "ruff"],
     },
 )

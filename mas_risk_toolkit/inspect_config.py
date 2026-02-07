@@ -258,6 +258,35 @@ def inspect_config(config_path_or_dict) -> None:
             print(_kv("inputs", f"{_DIM}(none — pipeline runs once with empty input){_RESET}"))
 
     # ------------------------------------------------------------------
+    # 2.5 LLM Configuration
+    # ------------------------------------------------------------------
+    llm_cfg = config.get("llm")
+    if llm_cfg:
+        print(_h2("LLM Configuration"))
+        print(_kv("default_model", llm_cfg.get("default_model", "gpt-4o")))
+        print(_kv("default_temperature", llm_cfg.get("default_temperature", 0.7)))
+        print(_kv("default_max_tokens", llm_cfg.get("default_max_tokens", 2048)))
+        providers = llm_cfg.get("providers", {})
+        if providers:
+            print(_kv("providers", f"{len(providers)} configured"))
+            for pname, pcfg in providers.items():
+                api_key_raw = pcfg.get("api_key", "")
+                if api_key_raw and api_key_raw.startswith("${"):
+                    key_display = f"{_CYAN}{api_key_raw}{_RESET}"
+                elif api_key_raw:
+                    key_display = f"{_DIM}(literal, {len(api_key_raw)} chars){_RESET}"
+                else:
+                    key_display = f"{_DIM}(env var fallback){_RESET}"
+                api_base = pcfg.get("api_base", "")
+                api_type = pcfg.get("api_type", "openai")
+                base_str = f"  base={api_base}" if api_base else ""
+                type_str = f"  type={api_type}" if api_type != "openai" else ""
+                print(_bullet(f"{_BOLD}{pname}{_RESET}  key={key_display}{base_str}{type_str}"))
+    else:
+        print(_h2("LLM Configuration"))
+        print(_kv("status", f"{_DIM}(not specified — will use environment variables){_RESET}"))
+
+    # ------------------------------------------------------------------
     # 3. Topology
     # ------------------------------------------------------------------
     topo_cfg = config.get("topology", {})
@@ -437,19 +466,30 @@ def inspect_config(config_path_or_dict) -> None:
     if agent_cfgs:
         print(_h2(f"Agents ({len(agent_cfgs)})"))
         print()
-        print(f"    {_BOLD}{'ID':<20} {'Role':<15} {'Model':<12} {'Objective':<15}{_RESET}")
-        print(f"    {'─' * 62}")
+        print(f"    {_BOLD}{'ID':<20} {'Role':<15} {'Model':<18} {'Objective':<15}{_RESET}")
+        print(f"    {'─' * 68}")
         for a in agent_cfgs:
             agent_id = a.get("agent_id", "?")
             role = a.get("role", "—")
             model = a.get("model", "—")
             obj = a.get("objective", "—")
-            print(f"    {agent_id:<20} {role:<15} {model:<12} {obj:<15}")
+            print(f"    {agent_id:<20} {role:<15} {model:<18} {obj:<15}")
         # Check if any agent has system_prompt
         has_prompts = [a["agent_id"] for a in agent_cfgs if a.get("system_prompt")]
         if has_prompts:
             print()
             print(f"    {_DIM}Agents with system_prompt: {has_prompts}{_RESET}")
+        # Check per-agent LLM overrides
+        has_overrides = [
+            a["agent_id"] for a in agent_cfgs
+            if a.get("temperature") is not None
+            or a.get("max_tokens") is not None
+            or a.get("api_key")
+            or a.get("api_base")
+            or a.get("provider")
+        ]
+        if has_overrides:
+            print(f"    {_DIM}Agents with per-agent LLM overrides: {has_overrides}{_RESET}")
 
     # ------------------------------------------------------------------
     # 9. Risks

@@ -19,11 +19,13 @@ Core Layers
 
 __version__ = "0.1.0"
 
-from mas_risk_toolkit.agents.base import Agent
+from mas_risk_toolkit.agents.base import Agent, AgentConfig
+from mas_risk_toolkit.agents.llm_agent import LLMAgent
 from mas_risk_toolkit.environments.base import Environment
 from mas_risk_toolkit.protocols.base import InteractionProtocol
 from mas_risk_toolkit.topology import CommunicationTopology, InformationFlowConfig
 from mas_risk_toolkit.tasks import TaskConfig
+from mas_risk_toolkit.llm import LLMConfig, LLMClient, ProviderConfig
 from mas_risk_toolkit.risks.base import Risk
 from mas_risk_toolkit.evaluation.logger import TrajectoryLogger
 from mas_risk_toolkit.evaluation.task_evaluator import TaskEvaluator
@@ -32,6 +34,11 @@ from mas_risk_toolkit.inspect_config import inspect_config
 
 __all__ = [
     "Agent",
+    "AgentConfig",
+    "LLMAgent",
+    "LLMConfig",
+    "LLMClient",
+    "ProviderConfig",
     "Environment",
     "InteractionProtocol",
     "CommunicationTopology",

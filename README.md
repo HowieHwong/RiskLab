@@ -20,8 +20,10 @@ Each risk is instantiated via a fully specified **topology–environment–proto
 mas_risk_toolkit/
 ├── topology.py            # Communication graph (adjacency matrix) & information flow
 ├── tasks.py               # Task definitions (what agents should accomplish)
+├── llm.py                 # LLM config, provider management & unified client
 ├── agents/                # Agent abstraction & roles
 │   ├── base.py            #   Agent base class (Policy + Role + Local View + Incentives)
+│   ├── llm_agent.py       #   LLMAgent — concrete agent backed by LLM APIs
 │   └── registry.py        #   Extensible agent-type registry
 ├── environments/          # Task + resource + rule environments
 │   ├── base.py            #   Environment base class (State + Constraints + Dynamics)
@@ -98,9 +100,104 @@ mas_risk_toolkit/
 
 ```bash
 pip install -e .
+
+# Optional: install LLM provider libraries
+pip install -e ".[openai]"       # for OpenAI models (gpt-4o, o1, …)
+pip install -e ".[anthropic]"    # for Anthropic models (claude-3-opus, …)
+pip install -e ".[all_llm]"     # all supported LLM providers
 ```
 
-### 2. Key Concepts
+### 2. Configure LLM API Keys
+
+API keys are resolved in **priority order**:
+
+1. **`${ENV_VAR}` syntax** in YAML — reads the named environment variable
+2. **Convention-based env var** — e.g. `OPENAI_API_KEY` for the `openai` provider
+3. **Literal string** in the config (not recommended — avoid committing secrets)
+
+**Simplest approach — environment variables only (zero YAML needed):**
+
+```bash
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+**Explicit YAML config (in your experiment file):**
+
+```yaml
+llm:
+  default_model: "gpt-4o"
+  default_temperature: 0.7
+  default_max_tokens: 2048
+  providers:
+    openai:
+      api_key: "${OPENAI_API_KEY}"              # env var reference
+      # api_base: "https://api.openai.com/v1"   # default; override for proxies
+    anthropic:
+      api_key: "${ANTHROPIC_API_KEY}"
+    local:                                       # e.g. vLLM / Ollama
+      api_base: "http://localhost:8000/v1"
+      api_key: "not-needed"
+      api_type: "openai"                         # OpenAI-compatible protocol
+```
+
+**Per-agent overrides** — each agent can use a different model, provider, or temperature:
+
+```yaml
+agents:
+  - agent_id: "seller_1"
+    role: "seller"
+    model: "gpt-4o"                 # → auto-detected as openai provider
+    objective: "selfish"
+    temperature: 0.9                # per-agent temperature
+  - agent_id: "seller_2"
+    role: "seller"
+    model: "claude-3-opus"          # → auto-detected as anthropic
+    objective: "selfish"
+  - agent_id: "seller_3"
+    role: "seller"
+    model: "local/my-finetuned"     # → explicit "provider/model" syntax
+    objective: "selfish"
+    api_base: "http://gpu-box:8000/v1"  # per-agent API base override
+```
+
+**Python API:**
+
+```python
+from mas_risk_toolkit.llm import LLMConfig, LLMClient
+
+# Option A: auto-read from environment variables
+config = LLMConfig.from_env()
+
+# Option B: build from a dict (e.g. parsed from YAML)
+config = LLMConfig.from_dict({
+    "default_model": "gpt-4o",
+    "providers": {
+        "openai": {"api_key": "${OPENAI_API_KEY}"},
+    },
+})
+
+# Unified client — dispatches to the correct provider
+client = LLMClient(config)
+reply = client.chat(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+```
+
+**Provider auto-detection** — the toolkit auto-maps model names to providers:
+
+| Model prefix | Auto-detected provider |
+|-------------|----------------------|
+| `gpt-*`, `o1`, `o3`, `o4` | `openai` |
+| `claude-*` | `anthropic` |
+| `deepseek-*` | `deepseek` |
+| `gemini-*` | `google` |
+| `glm-*` | `zhipu` |
+| `mistral-*`, `mixtral-*` | `mistral` |
+| `provider/model` | explicit `provider` |
+
+### 3. Key Concepts
 
 An experiment in MAS-Risk-Toolkit is composed of five building blocks:
 
@@ -112,7 +209,7 @@ An experiment in MAS-Risk-Toolkit is composed of five building blocks:
 | **Agents** | *The actors* — LLM-backed or rule-based, each with role + objective + memory | Agent policy |
 | **Task** | *What to accomplish* — description, success criteria, constraints, ground truth | Experiment goal |
 
-### 3. Define the Communication Topology
+### 4. Define the Communication Topology
 
 The topology uses an **adjacency matrix** to specify which agent can send messages to which other agent. This maps to the paper's formal definition `C : N × N × ℕ → {0,1}`.
 
@@ -199,7 +296,7 @@ topo.can_send("A", "C", t=4)  # True  (uses default)
 topo.can_send("A", "C", t=5)  # False (uses schedule override)
 ```
 
-### 4. Define the Information Flow
+### 5. Define the Information Flow
 
 The information flow specifies the *dynamic* aspects on top of the static adjacency matrix — where information enters, how it propagates, where it exits, and when to stop.
 
@@ -386,7 +483,7 @@ topology:
         node: "C"
 ```
 
-### 5. Define the Task
+### 6. Define the Task
 
 The task captures *what* the agents should accomplish, separate from the environment (the *world*) and the protocol (the *how*).
 
@@ -498,7 +595,7 @@ task:
   input_key: "documents"
 ```
 
-### 6. Wire Everything Together
+### 7. Wire Everything Together
 
 #### Option A: Programmatic (full control)
 
@@ -624,7 +721,7 @@ risks:
 seeds: 5
 ```
 
-### 7. Evaluate Tasks
+### 8. Evaluate Tasks
 
 Task evaluation is separate from risk evaluation. The `TaskEvaluator` judges whether the agents *accomplished the goal*, while `Risk.detect()` judges whether *emergent risks appeared*.
 
@@ -641,7 +738,7 @@ print(result.details)   # {"criteria_results": {"round_budget": True, ...}}
 
 Built-in criteria: `task_completed`, `round_budget`, `output_match`, `numeric_threshold`. Subclass `TaskEvaluator` for custom logic.
 
-### 8. Inspect a Config (CLI)
+### 9. Inspect a Config (CLI)
 
 Before running an experiment you can **inspect** any YAML config to see
 the full MAS structure at a glance — topology, flow diagram, simulated
@@ -679,7 +776,7 @@ inspect_config(my_config_dict)
 | Evaluation Metrics | Metric name + category |
 | Reproducibility | Seeds × inputs = total runs |
 
-### 9. Example Experiment Configs
+### 10. Example Experiment Configs
 
 The toolkit ships with four example configs:
 

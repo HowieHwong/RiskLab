@@ -24,13 +24,44 @@ from typing import Any, Dict, List, Optional
 
 @dataclass
 class AgentConfig:
-    """Serialisable configuration that fully specifies an agent."""
+    """Serialisable configuration that fully specifies an agent.
+
+    Required fields
+    ---------------
+    - ``agent_id`` : unique identifier (must match topology agent names)
+    - ``role``     : functional role (seller, moderator, interpreter, …)
+
+    Optional fields
+    ---------------
+    - ``model``      : LLM model identifier (default ``"gpt-4o"``).
+                       Supports ``"provider/model"`` syntax for explicit routing.
+    - ``objective``  : ``"selfish"`` | ``"cooperative"`` | ``"system"``
+                       Controls the objective-aware instruction injected into
+                       the agent's system prompt.
+    - ``system_prompt`` : role-specific prompt text.
+    - ``temperature``   : per-agent temperature override (``None`` → use global).
+    - ``max_tokens``    : per-agent max_tokens override (``None`` → use global).
+    - ``provider``      : explicit provider name override (``None`` → auto-detect).
+    - ``api_key``       : per-agent API key override (``None`` → use provider config).
+    - ``api_base``      : per-agent API base URL override (``None`` → use provider config).
+    - ``observation_filter`` : controls what part of state is visible (info asymmetry).
+    - ``action_space``  : list of permissible actions.
+    - ``parameters``    : arbitrary extra key-value pairs.
+    """
 
     agent_id: str
     role: str
     model: str = "gpt-4o"
     objective: str = "selfish"  # selfish | cooperative | system
     system_prompt: str = ""
+
+    # LLM overrides (per-agent)
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
+    provider: Optional[str] = None   # explicit provider name
+    api_key: Optional[str] = None    # per-agent API key override
+    api_base: Optional[str] = None   # per-agent API base override
+
     observation_filter: Optional[str] = None  # controls what part of state is visible
     action_space: Optional[List[str]] = None
     parameters: Dict[str, Any] = field(default_factory=dict)
