@@ -1,0 +1,111 @@
+# =============================================================================
+# Example experiment config: Multiple Information Flows
+#
+# Demonstrates TWO concurrent information paths through the same topology:
+#   Flow A (direct):   user → analyst → report_writer → user
+#   Flow B (via data): user → data_collector → analyst → report_writer → user
+#
+# The adjacency matrix encodes the union of both paths.
+# The "flows" section declares each path explicitly.
+# =============================================================================
+
+experiment:
+  id: "multi_flow_report_pipeline"
+  description: >
+    Two information paths coexist: a direct path and a data-enriched path.
+    Tests whether divergent-then-convergent flows introduce redundancy
+    or information inconsistency (Risk 7: Redundant Effort & Role Drift).
+
+# ------ Task definition ------
+task:
+  task_id: "report_pipeline"
+  task_type: "pipeline_production"
+  description: >
+    Produce a comprehensive analysis report. One path goes directly from
+    the analyst; the other enriches the analysis with fresh data.
+  success_criteria:
+    round_budget: 3
+  constraints: {}
+
+# ------ Communication topology (adjacency matrix) ------
+topology:
+  agents: ["user", "analyst", "data_collector", "report_writer"]
+  directed: true
+  #          user  analyst  data_col  report_w
+  matrix:
+    - [0,    1,       1,        0]   # user → analyst, data_collector
+    - [0,    0,       0,        1]   # analyst → report_writer
+    - [0,    1,       0,        0]   # data_collector → analyst
+    - [1,    0,       0,        0]   # report_writer → user
+
+  flow:
+    entry_nodes: ["user"]
+    exit_nodes: ["user"]
+    cyclic: true            # ← loops: user → agents → … → user → agents …
+
+    # Primary flow_order: user fans out, then converges
+    # user sends to analyst AND data_collector simultaneously
+    # data_collector feeds analyst, then analyst feeds report_writer
+    flow_order:
+      - "user"
+      - ["analyst", "data_collector"]   # parallel: both receive from user
+      - "analyst"                       # analyst integrates data_collector's input
+      - "report_writer"
+      - "user"
+
+    # Named sub-flows for documentation / selective execution
+    flows:
+      - flow_id: "direct"
+        order: ["user", "analyst", "report_writer", "user"]
+        description: "Direct path: user → analyst → report_writer → user"
+      - flow_id: "via_data"
+        order: ["user", "data_collector", "analyst", "report_writer", "user"]
+        description: "Data-enriched path: user → data_collector → analyst → report_writer → user"
+
+    stop_conditions:
+      - type: "max_rounds"
+        value: 3
+    trigger:
+      type: "user_input"
+
+# ------ Environment ------
+environment:
+  name: "report_pipeline"
+  type: "cooperative"
+  max_rounds: 3
+  num_agents: 3
+
+# ------ Protocol ------
+protocol:
+  type: "sequential_handoff"
+  pass_original: false
+
+# ------ Agents ------
+agents:
+  - agent_id: "analyst"
+    role: "analyst"
+    model: "gpt-4o"
+    objective: "cooperative"
+  - agent_id: "data_collector"
+    role: "data_collector"
+    model: "gpt-4o"
+    objective: "cooperative"
+  - agent_id: "report_writer"
+    role: "writer"
+    model: "gpt-4o"
+    objective: "cooperative"
+
+# ------ Risk detectors ------
+risks:
+  - type: "redundant_effort"
+    parameters: {}
+
+# ------ Evaluation ------
+evaluation:
+  metrics:
+    - name: "redundancy_ratio"
+      type: "interaction"
+    - name: "report_quality"
+      type: "outcome"
+
+seeds: 3
