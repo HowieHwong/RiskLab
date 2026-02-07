@@ -181,7 +181,51 @@ API keys are resolved in this order:
 2. **Convention-based env var** — e.g. `OPENAI_API_KEY` for the `openai` provider
 3. **Literal string** in YAML (not recommended — avoid committing secrets)
 
-**Per-agent overrides** — each agent can use a different model, provider, or temperature:
+---
+
+#### Provider Configuration Options
+
+Each provider supports these fields:
+
+- **`api_key`**: API key (supports `${ENV_VAR}` syntax)
+- **`api_base`**: Base URL (optional, defaults provided for known providers)
+- **`api_type`**: `"openai"` or `"anthropic"` (default: `"openai"`)
+- **`default_model`**: Provider-specific default model
+- **`extra_headers`**: Extra HTTP headers (dict)
+- **`parameters`**: Provider-specific extra parameters (dict)
+
+**Example: Multi-Provider Setup**
+
+```yaml
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+  anthropic:
+    api_key: "${ANTHROPIC_API_KEY}"
+  deepseek:
+    api_key: "${DEEPSEEK_API_KEY}"
+    api_base: "https://api.deepseek.com/v1"
+  local:
+    api_base: "http://localhost:8000/v1"
+    api_key: "not-needed"
+    api_type: "openai"
+```
+
+**Example: OpenAI with Organization**
+
+```yaml
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+    extra_headers:
+      "OpenAI-Organization": "org-abc123"
+```
+
+---
+
+#### Per-Agent Overrides
+
+Each agent can use a different model, provider, or temperature:
 
 ```yaml
 agents:
@@ -201,10 +245,30 @@ agents:
     api_base: "http://gpu-box:8000/v1"  # per-agent API base override
 ```
 
-**Python API:**
+---
+
+#### Security Best Practices
+
+1. **Never commit `llm_config.yaml` with real API keys**
+   - Already added to `.gitignore`
+   - Use `${ENV_VAR}` syntax or convention-based env vars
+
+2. **Use separate configs for different environments**
+   ```bash
+   llm_config.dev.yaml      # development
+   llm_config.prod.yaml     # production
+   ```
+
+3. **Share templates, not secrets**
+   - Commit `llm_config.yaml.template` with placeholders
+   - Users copy and fill in their own keys
+
+---
+
+#### Python API
 
 ```python
-from mas_risk_toolkit.llm import LLMConfig, LLMClient
+from mas_risk_toolkit import LLMConfig, LLMClient, load_llm_config, build_agents_from_config
 
 # Option A: load from external YAML file (recommended)
 config = LLMConfig.from_file("llm_config.yaml")
@@ -220,15 +284,30 @@ config = LLMConfig.from_dict({
     },
 })
 
+# Option D: load from experiment config (supports llm_config_path)
+exp_config = {"llm_config_path": "llm_config.yaml"}
+config = load_llm_config(exp_config, base_dir=".")
+
 # Unified client — dispatches to the correct provider
 client = LLMClient(config)
 reply = client.chat(
     model="gpt-4o",
     messages=[{"role": "user", "content": "Hello!"}],
 )
+
+# Build agents from config (used by ExperimentRunner)
+agents = build_agents_from_config(
+    agent_configs=[{"agent_id": "A", "role": "worker", "model": "gpt-4o"}],
+    llm_config=config,
+    task=task_config,
+)
 ```
 
-**Provider auto-detection** — the toolkit auto-maps model names to providers:
+---
+
+#### Provider Auto-Detection
+
+The toolkit auto-maps model names to providers:
 
 | Model prefix | Auto-detected provider |
 |-------------|----------------------|
@@ -239,6 +318,26 @@ reply = client.chat(
 | `glm-*` | `zhipu` |
 | `mistral-*`, `mixtral-*` | `mistral` |
 | `provider/model` | explicit `provider` |
+
+---
+
+#### Troubleshooting
+
+**"ModuleNotFoundError: No module named 'yaml'"**
+
+```bash
+pip install pyyaml
+```
+
+**"FileNotFoundError: llm_config.yaml not found"**
+
+- Check the path is relative to the experiment config file's directory
+- Use absolute path if needed: `llm_config_path: "/path/to/llm_config.yaml"`
+
+**"Cannot auto-detect provider for model 'xyz'"**
+
+- Use explicit syntax: `model: "provider/model"`
+- Or register the provider in `llm_config.yaml` with a `default_model`
 
 ### 3. Key Concepts
 

@@ -184,7 +184,51 @@ API Key 按以下顺序解析：
 2. **约定环境变量** — 例如 `openai` 提供商自动读取 `OPENAI_API_KEY`
 3. **字面量字符串**（YAML 中，不推荐，避免将密钥提交到代码仓库）
 
-**逐智能体覆盖** — 每个智能体可以使用不同的模型、提供商或温度：
+---
+
+#### 提供商配置选项
+
+每个提供商支持以下字段：
+
+- **`api_key`**：API Key（支持 `${ENV_VAR}` 语法）
+- **`api_base`**：Base URL（可选，已知提供商有默认值）
+- **`api_type`**：`"openai"` 或 `"anthropic"`（默认：`"openai"`）
+- **`default_model`**：提供商专用默认模型
+- **`extra_headers`**：额外的 HTTP 头（字典）
+- **`parameters`**：提供商特定的额外参数（字典）
+
+**示例：多提供商配置**
+
+```yaml
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+  anthropic:
+    api_key: "${ANTHROPIC_API_KEY}"
+  deepseek:
+    api_key: "${DEEPSEEK_API_KEY}"
+    api_base: "https://api.deepseek.com/v1"
+  local:
+    api_base: "http://localhost:8000/v1"
+    api_key: "not-needed"
+    api_type: "openai"
+```
+
+**示例：OpenAI 组织配置**
+
+```yaml
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+    extra_headers:
+      "OpenAI-Organization": "org-abc123"
+```
+
+---
+
+#### 逐智能体覆盖
+
+每个智能体可以使用不同的模型、提供商或温度：
 
 ```yaml
 agents:
@@ -204,10 +248,30 @@ agents:
     api_base: "http://gpu-box:8000/v1"  # 逐智能体 API 地址覆盖
 ```
 
-**Python API：**
+---
+
+#### 安全最佳实践
+
+1. **绝不要提交包含真实 API Key 的 `llm_config.yaml`**
+   - 已添加到 `.gitignore`
+   - 使用 `${ENV_VAR}` 语法或约定环境变量
+
+2. **为不同环境使用独立配置**
+   ```bash
+   llm_config.dev.yaml      # 开发环境
+   llm_config.prod.yaml     # 生产环境
+   ```
+
+3. **共享模板，而非密钥**
+   - 提交 `llm_config.yaml.template` 包含占位符
+   - 用户复制并填入自己的密钥
+
+---
+
+#### Python API
 
 ```python
-from mas_risk_toolkit.llm import LLMConfig, LLMClient
+from mas_risk_toolkit import LLMConfig, LLMClient, load_llm_config, build_agents_from_config
 
 # 方式 A：从外部 YAML 文件加载（推荐）
 config = LLMConfig.from_file("llm_config.yaml")
@@ -223,15 +287,30 @@ config = LLMConfig.from_dict({
     },
 })
 
+# 方式 D：从实验配置加载（支持 llm_config_path）
+exp_config = {"llm_config_path": "llm_config.yaml"}
+config = load_llm_config(exp_config, base_dir=".")
+
 # 统一客户端 — 自动分发到正确的提供商
 client = LLMClient(config)
 reply = client.chat(
     model="gpt-4o",
     messages=[{"role": "user", "content": "Hello!"}],
 )
+
+# 从配置构建智能体（ExperimentRunner 使用）
+agents = build_agents_from_config(
+    agent_configs=[{"agent_id": "A", "role": "worker", "model": "gpt-4o"}],
+    llm_config=config,
+    task=task_config,
+)
 ```
 
-**提供商自动检测** — 工具包根据模型名前缀自动映射到提供商：
+---
+
+#### 提供商自动检测
+
+工具包根据模型名前缀自动映射到提供商：
 
 | 模型前缀 | 自动检测提供商 |
 |----------|--------------|
@@ -242,6 +321,26 @@ reply = client.chat(
 | `glm-*` | `zhipu` |
 | `mistral-*`, `mixtral-*` | `mistral` |
 | `provider/model` | 显式指定 `provider` |
+
+---
+
+#### 故障排查
+
+**"ModuleNotFoundError: No module named 'yaml'"**
+
+```bash
+pip install pyyaml
+```
+
+**"FileNotFoundError: llm_config.yaml not found"**
+
+- 检查路径是否相对于实验配置文件的目录
+- 如需要可使用绝对路径：`llm_config_path: "/path/to/llm_config.yaml"`
+
+**"Cannot auto-detect provider for model 'xyz'"**
+
+- 使用显式语法：`model: "provider/model"`
+- 或在 `llm_config.yaml` 中注册提供商并指定 `default_model`
 
 ### 3. 核心概念
 
