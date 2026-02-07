@@ -109,37 +109,77 @@ pip install -e ".[all_llm]"     # all supported LLM providers
 
 ### 2. Configure LLM API Keys
 
-API keys are resolved in **priority order**:
+#### Recommended: Separate LLM Config File
 
-1. **`${ENV_VAR}` syntax** in YAML — reads the named environment variable
-2. **Convention-based env var** — e.g. `OPENAI_API_KEY` for the `openai` provider
-3. **Literal string** in the config (not recommended — avoid committing secrets)
+The toolkit supports a **shared `llm_config.yaml`** file for all experiments. This keeps API keys and provider settings separate from experiment logic.
 
-**Simplest approach — environment variables only (zero YAML needed):**
+**1. Create `llm_config.yaml` in your project root:**
+
+```yaml
+default_model: "gpt-4o"
+default_temperature: 0.7
+default_max_tokens: 2048
+
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"              # reads from environment variable
+  anthropic:
+    api_key: "${ANTHROPIC_API_KEY}"
+  # local:                                     # e.g. vLLM / Ollama
+  #   api_base: "http://localhost:8000/v1"
+  #   api_key: "not-needed"
+  #   api_type: "openai"
+```
+
+**2. Reference it in your experiment YAML:**
+
+```yaml
+experiment:
+  id: "my_experiment"
+  description: "..."
+
+llm_config_path: "llm_config.yaml"           # relative or absolute path
+
+# ... rest of experiment config (topology, agents, etc.)
+```
+
+**3. Set environment variables:**
 
 ```bash
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-**Explicit YAML config (in your experiment file):**
+---
+
+#### Alternative Methods
+
+**Inline LLM config** (not recommended — harder to manage secrets):
 
 ```yaml
 llm:
   default_model: "gpt-4o"
-  default_temperature: 0.7
-  default_max_tokens: 2048
   providers:
     openai:
-      api_key: "${OPENAI_API_KEY}"              # env var reference
-      # api_base: "https://api.openai.com/v1"   # default; override for proxies
-    anthropic:
-      api_key: "${ANTHROPIC_API_KEY}"
-    local:                                       # e.g. vLLM / Ollama
-      api_base: "http://localhost:8000/v1"
-      api_key: "not-needed"
-      api_type: "openai"                         # OpenAI-compatible protocol
+      api_key: "${OPENAI_API_KEY}"
 ```
+
+**Environment variables only** (zero YAML config):
+
+```bash
+export OPENAI_API_KEY="sk-..."
+# Omit both llm_config_path and llm: in your experiment YAML
+```
+
+---
+
+#### API Key Resolution Priority
+
+API keys are resolved in this order:
+
+1. **`${ENV_VAR}` syntax** in YAML — reads the named environment variable
+2. **Convention-based env var** — e.g. `OPENAI_API_KEY` for the `openai` provider
+3. **Literal string** in YAML (not recommended — avoid committing secrets)
 
 **Per-agent overrides** — each agent can use a different model, provider, or temperature:
 
@@ -166,10 +206,13 @@ agents:
 ```python
 from mas_risk_toolkit.llm import LLMConfig, LLMClient
 
-# Option A: auto-read from environment variables
+# Option A: load from external YAML file (recommended)
+config = LLMConfig.from_file("llm_config.yaml")
+
+# Option B: auto-read from environment variables
 config = LLMConfig.from_env()
 
-# Option B: build from a dict (e.g. parsed from YAML)
+# Option C: build from a dict (e.g. parsed from experiment YAML)
 config = LLMConfig.from_dict({
     "default_model": "gpt-4o",
     "providers": {

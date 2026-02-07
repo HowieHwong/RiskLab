@@ -30,6 +30,11 @@ from mas_risk_toolkit.risks.base import Risk
 from mas_risk_toolkit.evaluation.logger import TrajectoryLogger
 from mas_risk_toolkit.evaluation.task_evaluator import TaskEvaluator
 from mas_risk_toolkit.experiments.runner import ExperimentRunner
+from mas_risk_toolkit.experiments.config_loader import (
+    load_llm_config,
+    build_agents_from_config,
+    load_experiment_config,
+)
 from mas_risk_toolkit.inspect_config import inspect_config
 
 __all__ = [
@@ -48,5 +53,8 @@ __all__ = [
     "TrajectoryLogger",
     "TaskEvaluator",
     "ExperimentRunner",
+    "load_llm_config",
+    "build_agents_from_config",
+    "load_experiment_config",
     "inspect_config",
 ]

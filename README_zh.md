@@ -112,37 +112,77 @@ pip install -e ".[all_llm]"     # 所有支持的 LLM 提供商
 
 ### 2. 配置 LLM API Key
 
-API Key 按以下**优先级**解析：
+#### 推荐方式：独立的 LLM 配置文件
 
-1. **`${ENV_VAR}` 语法**（YAML 中）— 读取指定的环境变量
-2. **约定环境变量** — 例如 `openai` 提供商自动读取 `OPENAI_API_KEY`
-3. **字面量字符串**（不推荐，避免将密钥提交到代码仓库）
+工具包支持**共享的 `llm_config.yaml` 文件**用于所有实验。这样可以将 API Key 和提供商设置与实验逻辑分离。
 
-**最简方式 — 仅使用环境变量（无需任何 YAML 配置）：**
+**1. 在项目根目录创建 `llm_config.yaml`：**
+
+```yaml
+default_model: "gpt-4o"
+default_temperature: 0.7
+default_max_tokens: 2048
+
+providers:
+  openai:
+    api_key: "${OPENAI_API_KEY}"              # 从环境变量读取
+  anthropic:
+    api_key: "${ANTHROPIC_API_KEY}"
+  # local:                                     # 例如 vLLM / Ollama
+  #   api_base: "http://localhost:8000/v1"
+  #   api_key: "not-needed"
+  #   api_type: "openai"
+```
+
+**2. 在实验 YAML 中引用它：**
+
+```yaml
+experiment:
+  id: "my_experiment"
+  description: "..."
+
+llm_config_path: "llm_config.yaml"           # 相对或绝对路径
+
+# ... 实验配置的其余部分（topology, agents 等）
+```
+
+**3. 设置环境变量：**
 
 ```bash
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-**显式 YAML 配置（写在实验配置文件中）：**
+---
+
+#### 其他方式
+
+**内联 LLM 配置**（不推荐 — 更难管理密钥）：
 
 ```yaml
 llm:
   default_model: "gpt-4o"
-  default_temperature: 0.7
-  default_max_tokens: 2048
   providers:
     openai:
-      api_key: "${OPENAI_API_KEY}"              # 环境变量引用
-      # api_base: "https://api.openai.com/v1"   # 默认值；代理时覆盖
-    anthropic:
-      api_key: "${ANTHROPIC_API_KEY}"
-    local:                                       # 例如 vLLM / Ollama
-      api_base: "http://localhost:8000/v1"
-      api_key: "not-needed"
-      api_type: "openai"                         # OpenAI 兼容协议
+      api_key: "${OPENAI_API_KEY}"
 ```
+
+**仅使用环境变量**（无需任何 YAML 配置）：
+
+```bash
+export OPENAI_API_KEY="sk-..."
+# 在实验 YAML 中同时省略 llm_config_path 和 llm:
+```
+
+---
+
+#### API Key 解析优先级
+
+API Key 按以下顺序解析：
+
+1. **`${ENV_VAR}` 语法**（YAML 中）— 读取指定的环境变量
+2. **约定环境变量** — 例如 `openai` 提供商自动读取 `OPENAI_API_KEY`
+3. **字面量字符串**（YAML 中，不推荐，避免将密钥提交到代码仓库）
 
 **逐智能体覆盖** — 每个智能体可以使用不同的模型、提供商或温度：
 
@@ -169,10 +209,13 @@ agents:
 ```python
 from mas_risk_toolkit.llm import LLMConfig, LLMClient
 
-# 方式 A：从环境变量自动读取
+# 方式 A：从外部 YAML 文件加载（推荐）
+config = LLMConfig.from_file("llm_config.yaml")
+
+# 方式 B：从环境变量自动读取
 config = LLMConfig.from_env()
 
-# 方式 B：从字典构建（例如从 YAML 解析得到）
+# 方式 C：从字典构建（例如从实验 YAML 解析得到）
 config = LLMConfig.from_dict({
     "default_model": "gpt-4o",
     "providers": {

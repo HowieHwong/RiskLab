@@ -17,20 +17,7 @@ experiment:
     against the original report.
 
 # ------ LLM configuration ------
-# Omit this section to read API keys purely from environment variables.
-# Here we show a heterogeneous setup: some agents use OpenAI, one uses a local model.
-llm:
-  default_model: "gpt-4o"
-  default_temperature: 0.3          # lower temp for more deterministic pipelines
-  default_max_tokens: 1024
-  providers:
-    openai:
-      api_key: "${OPENAI_API_KEY}"
-    # Example: a local vLLM / Ollama server
-    # local:
-    #   api_base: "http://localhost:8000/v1"
-    #   api_key: "not-needed"
-    #   api_type: "openai"
+llm_config_path: "llm_config.yaml"
 
 # ------ Task definition ------
 task:

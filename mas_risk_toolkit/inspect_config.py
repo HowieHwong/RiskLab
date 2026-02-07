@@ -260,9 +260,41 @@ def inspect_config(config_path_or_dict) -> None:
     # ------------------------------------------------------------------
     # 2.5 LLM Configuration
     # ------------------------------------------------------------------
+    # Support both inline llm: and external llm_config_path:
     llm_cfg = config.get("llm")
-    if llm_cfg:
+    llm_config_path = config.get("llm_config_path")
+    
+    # If external path is specified, try to load it
+    if llm_config_path:
         print(_h2("LLM Configuration"))
+        print(_kv("source", f"external file: {_CYAN}{llm_config_path}{_RESET}"))
+        try:
+            # Attempt to resolve relative to the config file's directory
+            if isinstance(config_path_or_dict, str):
+                import os
+                base_dir = os.path.dirname(os.path.abspath(config_path_or_dict))
+                full_path = os.path.join(base_dir, llm_config_path) if not os.path.isabs(llm_config_path) else llm_config_path
+            else:
+                full_path = llm_config_path
+            
+            if yaml is not None:
+                with open(full_path, "r", encoding="utf-8") as f:
+                    llm_cfg = yaml.safe_load(f) or {}
+                print(_ok(f"Loaded from {full_path}"))
+            else:
+                print(_warn("PyYAML not installed — cannot load external LLM config"))
+                llm_cfg = None
+        except FileNotFoundError:
+            print(_err(f"File not found: {full_path}"))
+            llm_cfg = None
+        except Exception as e:
+            print(_err(f"Failed to load LLM config: {e}"))
+            llm_cfg = None
+    
+    if llm_cfg:
+        if not llm_config_path:
+            print(_h2("LLM Configuration"))
+            print(_kv("source", f"{_DIM}inline in experiment config{_RESET}"))
         print(_kv("default_model", llm_cfg.get("default_model", "gpt-4o")))
         print(_kv("default_temperature", llm_cfg.get("default_temperature", 0.7)))
         print(_kv("default_max_tokens", llm_cfg.get("default_max_tokens", 2048)))
@@ -282,7 +314,7 @@ def inspect_config(config_path_or_dict) -> None:
                 base_str = f"  base={api_base}" if api_base else ""
                 type_str = f"  type={api_type}" if api_type != "openai" else ""
                 print(_bullet(f"{_BOLD}{pname}{_RESET}  key={key_display}{base_str}{type_str}"))
-    else:
+    elif not llm_config_path:
         print(_h2("LLM Configuration"))
         print(_kv("status", f"{_DIM}(not specified — will use environment variables){_RESET}"))
 

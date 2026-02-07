@@ -316,6 +316,39 @@ class LLMConfig:
         )
 
     @classmethod
+    def from_file(cls, path: str) -> "LLMConfig":
+        """Load LLM configuration from a YAML file.
+
+        Parameters
+        ----------
+        path : str
+            Path to the YAML config file (e.g. ``llm_config.yaml``).
+
+        Returns
+        -------
+        LLMConfig
+
+        Raises
+        ------
+        ImportError
+            If PyYAML is not installed.
+        FileNotFoundError
+            If the file does not exist.
+        """
+        try:
+            import yaml
+        except ImportError:
+            raise ImportError(
+                "PyYAML is required to load YAML config files. "
+                "Install it with: pip install pyyaml"
+            )
+
+        with open(path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+
+        return cls.from_dict(data)
+
+    @classmethod
     def from_env(cls, default_model: str = "gpt-4o") -> "LLMConfig":
         """Create a minimal config that reads API keys purely from
         environment variables (zero YAML needed).
