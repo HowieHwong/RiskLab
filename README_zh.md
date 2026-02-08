@@ -1,4 +1,4 @@
-# MAS-Risk-Toolkit
+# RiskLab
 
 > **一个用于实例化、探测和度量 LLM 多智能体系统中涌现性社会风险的受控交互框架。**
 
@@ -17,7 +17,7 @@
 ## 架构
 
 ```
-mas_risk_toolkit/
+risklab/
 ├── topology.py            # 通信拓扑（邻接矩阵）与信息流定义
 ├── tasks.py               # 任务定义（智能体需要完成什么）
 ├── llm.py                 # LLM 配置、提供商管理与统一调用客户端
@@ -271,7 +271,7 @@ agents:
 #### Python API
 
 ```python
-from mas_risk_toolkit import LLMConfig, LLMClient, load_llm_config, build_agents_from_config
+from risklab import LLMConfig, LLMClient, load_llm_config, build_agents_from_config
 
 # 方式 A：从外部 YAML 文件加载（推荐）
 config = LLMConfig.from_file("llm_config.yaml")
@@ -361,7 +361,7 @@ MAS-Risk-Toolkit 中的一次实验由五个构建块组成：
 #### 方式一：邻接矩阵
 
 ```python
-from mas_risk_toolkit.topology import CommunicationTopology
+from risklab.topology import CommunicationTopology
 
 # 风险 2：默契合谋 — 3 个卖家互相可见
 topo = CommunicationTopology(
@@ -421,7 +421,7 @@ topology:
 如果通信图会随时间变化：
 
 ```python
-from mas_risk_toolkit.topology import TimeVaryingTopology
+from risklab.topology import TimeVaryingTopology
 
 topo = TimeVaryingTopology(
     agent_ids=["A", "B", "C"],
@@ -448,7 +448,7 @@ topo.can_send("A", "C", t=5)  # False (使用第 5 轮覆盖)
 #### 串行流（基础）
 
 ```python
-from mas_risk_toolkit.topology import (
+from risklab.topology import (
     InformationFlowConfig,
     StopCondition, StopConditionType,
     TriggerCondition, TriggerType,
@@ -508,7 +508,7 @@ flow_order = ["user", ["img", "txt", "vid", "code", "voice"], "summary", "user"]
 当一个实验中有 **两条或更多信息路径** 穿过同一拓扑时，使用 `flows` 参数声明命名的子信息流：
 
 ```python
-from mas_risk_toolkit.topology import InformationFlowConfig, FlowPath
+from risklab.topology import InformationFlowConfig, FlowPath
 
 flow = InformationFlowConfig(
     entry_nodes=["user"],
@@ -633,7 +633,7 @@ topology:
 任务描述智能体 *要完成什么*，独立于环境（世界）和协议（怎么交互）。
 
 ```python
-from mas_risk_toolkit.tasks import TaskConfig, TaskType
+from risklab.tasks import TaskConfig, TaskType
 
 task = TaskConfig(
     task_id="ad_pipeline_relay",
@@ -738,11 +738,11 @@ task:
 #### 方式 A：纯代码（完全控制）
 
 ```python
-from mas_risk_toolkit import ExperimentRunner
-from mas_risk_toolkit.topology import CommunicationTopology, InformationFlowConfig, StopCondition, StopConditionType
-from mas_risk_toolkit.tasks import TaskConfig, TaskType
-from mas_risk_toolkit.protocols import MarketTurnBased
-from mas_risk_toolkit.evaluation.task_evaluator import RuleBasedTaskEvaluator
+from risklab import ExperimentRunner
+from risklab.topology import CommunicationTopology, InformationFlowConfig, StopCondition, StopConditionType
+from risklab.tasks import TaskConfig, TaskType
+from risklab.protocols import MarketTurnBased
+from risklab.evaluation.task_evaluator import RuleBasedTaskEvaluator
 
 # 1. 拓扑
 topo = CommunicationTopology(
@@ -864,7 +864,7 @@ seeds: 5
 任务评估与风险评估是分开的。`TaskEvaluator` 判断智能体是否 *完成了目标*，而 `Risk.detect()` 判断是否 *出现了涌现风险*。
 
 ```python
-from mas_risk_toolkit.evaluation.task_evaluator import RuleBasedTaskEvaluator
+from risklab.evaluation.task_evaluator import RuleBasedTaskEvaluator
 
 evaluator = RuleBasedTaskEvaluator()
 result = evaluator.evaluate(task, trajectory)
@@ -882,15 +882,15 @@ print(result.details)   # {"criteria_results": {"round_budget": True, ...}}
 
 ```bash
 # 在仓库根目录下运行（需要安装 PyYAML）：
-python -m mas_risk_toolkit.inspect_config  mas_risk_toolkit/experiments/configs/example_multi_flow.yaml
+python -m risklab.inspect_config  risklab/experiments/configs/example_multi_flow.yaml
 ```
 
 也可以在 Python 中调用：
 
 ```python
-from mas_risk_toolkit.inspect_config import inspect_config
+from risklab.inspect_config import inspect_config
 
-inspect_config("mas_risk_toolkit/experiments/configs/example_multi_flow.yaml")
+inspect_config("risklab/experiments/configs/example_multi_flow.yaml")
 
 # 也可以直接传入已解析的 dict 而非文件路径：
 inspect_config(my_config_dict)
@@ -930,8 +930,8 @@ inspect_config(my_config_dict)
 ### 新增一个风险
 
 ```python
-from mas_risk_toolkit.risks.base import Risk, RiskConfig, RiskCategory, LifecycleStage
-from mas_risk_toolkit.risks.registry import RiskRegistry
+from risklab.risks.base import Risk, RiskConfig, RiskCategory, LifecycleStage
+from risklab.risks.registry import RiskRegistry
 
 @RiskRegistry.register("my_new_risk")
 class MyNewRisk(Risk):
@@ -954,7 +954,7 @@ class MyNewRisk(Risk):
 ### 新增一个环境
 
 ```python
-from mas_risk_toolkit.environments.competitive.base import CompetitiveEnvironment
+from risklab.environments.competitive.base import CompetitiveEnvironment
 
 class MyAuctionEnv(CompetitiveEnvironment):
     def reset(self):
@@ -968,8 +968,8 @@ class MyAuctionEnv(CompetitiveEnvironment):
 ### 新增一个智能体后端
 
 ```python
-from mas_risk_toolkit.agents.base import Agent, AgentConfig
-from mas_risk_toolkit.agents.registry import AgentRegistry
+from risklab.agents.base import Agent, AgentConfig
+from risklab.agents.registry import AgentRegistry
 
 @AgentRegistry.register("openai")
 class OpenAIAgent(Agent):
@@ -981,7 +981,7 @@ class OpenAIAgent(Agent):
 ### 新增一个协议
 
 ```python
-from mas_risk_toolkit.protocols.base import InteractionProtocol
+from risklab.protocols.base import InteractionProtocol
 
 class MyCustomProtocol(InteractionProtocol):
     def get_next_speaker(self):

@@ -1,4 +1,4 @@
-# MAS-Risk-Toolkit
+# RiskLab
 
 > **A controlled multi-agent interaction framework for instantiating, probing, and measuring emergent social risks in LLM-based agent collectives.**
 
@@ -17,7 +17,7 @@ Each risk is instantiated via a fully specified **topology–environment–proto
 ## Architecture
 
 ```
-mas_risk_toolkit/
+risklab/
 ├── topology.py            # Communication graph (adjacency matrix) & information flow
 ├── tasks.py               # Task definitions (what agents should accomplish)
 ├── llm.py                 # LLM config, provider management & unified client
@@ -268,7 +268,7 @@ agents:
 #### Python API
 
 ```python
-from mas_risk_toolkit import LLMConfig, LLMClient, load_llm_config, build_agents_from_config
+from risklab import LLMConfig, LLMClient, load_llm_config, build_agents_from_config
 
 # Option A: load from external YAML file (recommended)
 config = LLMConfig.from_file("llm_config.yaml")
@@ -358,7 +358,7 @@ The topology uses an **adjacency matrix** to specify which agent can send messag
 #### From an adjacency matrix
 
 ```python
-from mas_risk_toolkit.topology import CommunicationTopology
+from risklab.topology import CommunicationTopology
 
 # Risk 2: Tacit Collusion — 3 sellers can all see each other
 topo = CommunicationTopology(
@@ -418,7 +418,7 @@ topology:
 For experiments where the communication graph changes over time:
 
 ```python
-from mas_risk_toolkit.topology import TimeVaryingTopology
+from risklab.topology import TimeVaryingTopology
 
 topo = TimeVaryingTopology(
     agent_ids=["A", "B", "C"],
@@ -445,7 +445,7 @@ The information flow specifies the *dynamic* aspects on top of the static adjace
 #### Serial flow (basic)
 
 ```python
-from mas_risk_toolkit.topology import (
+from risklab.topology import (
     InformationFlowConfig,
     StopCondition, StopConditionType,
     TriggerCondition, TriggerType,
@@ -505,7 +505,7 @@ flow_order = ["user", ["img", "txt", "vid", "code", "voice"], "summary", "user"]
 When an experiment has **two or more information paths** through the same topology, use the `flows` parameter to declare named sub-flows:
 
 ```python
-from mas_risk_toolkit.topology import InformationFlowConfig, FlowPath
+from risklab.topology import InformationFlowConfig, FlowPath
 
 flow = InformationFlowConfig(
     entry_nodes=["user"],
@@ -630,7 +630,7 @@ topology:
 The task captures *what* the agents should accomplish, separate from the environment (the *world*) and the protocol (the *how*).
 
 ```python
-from mas_risk_toolkit.tasks import TaskConfig, TaskType
+from risklab.tasks import TaskConfig, TaskType
 
 task = TaskConfig(
     task_id="ad_pipeline_relay",
@@ -742,11 +742,11 @@ task:
 #### Option A: Programmatic (full control)
 
 ```python
-from mas_risk_toolkit import ExperimentRunner
-from mas_risk_toolkit.topology import CommunicationTopology, InformationFlowConfig, StopCondition, StopConditionType
-from mas_risk_toolkit.tasks import TaskConfig, TaskType
-from mas_risk_toolkit.protocols import MarketTurnBased
-from mas_risk_toolkit.evaluation.task_evaluator import RuleBasedTaskEvaluator
+from risklab import ExperimentRunner
+from risklab.topology import CommunicationTopology, InformationFlowConfig, StopCondition, StopConditionType
+from risklab.tasks import TaskConfig, TaskType
+from risklab.protocols import MarketTurnBased
+from risklab.evaluation.task_evaluator import RuleBasedTaskEvaluator
 
 # 1. Topology
 topo = CommunicationTopology(
@@ -868,7 +868,7 @@ seeds: 5
 Task evaluation is separate from risk evaluation. The `TaskEvaluator` judges whether the agents *accomplished the goal*, while `Risk.detect()` judges whether *emergent risks appeared*.
 
 ```python
-from mas_risk_toolkit.evaluation.task_evaluator import RuleBasedTaskEvaluator
+from risklab.evaluation.task_evaluator import RuleBasedTaskEvaluator
 
 evaluator = RuleBasedTaskEvaluator()
 result = evaluator.evaluate(task, trajectory)
@@ -888,15 +888,15 @@ speaker order, agent table, risks, etc.
 
 ```bash
 # From the repo root (requires PyYAML):
-python -m mas_risk_toolkit.inspect_config  mas_risk_toolkit/experiments/configs/example_multi_flow.yaml
+python -m risklab.inspect_config  risklab/experiments/configs/example_multi_flow.yaml
 ```
 
 Or from Python:
 
 ```python
-from mas_risk_toolkit.inspect_config import inspect_config
+from risklab.inspect_config import inspect_config
 
-inspect_config("mas_risk_toolkit/experiments/configs/example_multi_flow.yaml")
+inspect_config("risklab/experiments/configs/example_multi_flow.yaml")
 
 # You can also pass an already-parsed dict instead of a file path:
 inspect_config(my_config_dict)
@@ -936,8 +936,8 @@ The toolkit ships with four example configs:
 ### Adding a New Risk
 
 ```python
-from mas_risk_toolkit.risks.base import Risk, RiskConfig, RiskCategory, LifecycleStage
-from mas_risk_toolkit.risks.registry import RiskRegistry
+from risklab.risks.base import Risk, RiskConfig, RiskCategory, LifecycleStage
+from risklab.risks.registry import RiskRegistry
 
 @RiskRegistry.register("my_new_risk")
 class MyNewRisk(Risk):
@@ -960,7 +960,7 @@ class MyNewRisk(Risk):
 ### Adding a New Environment
 
 ```python
-from mas_risk_toolkit.environments.competitive.base import CompetitiveEnvironment
+from risklab.environments.competitive.base import CompetitiveEnvironment
 
 class MyAuctionEnv(CompetitiveEnvironment):
     def reset(self):
@@ -974,8 +974,8 @@ class MyAuctionEnv(CompetitiveEnvironment):
 ### Adding a New Agent Backend
 
 ```python
-from mas_risk_toolkit.agents.base import Agent, AgentConfig
-from mas_risk_toolkit.agents.registry import AgentRegistry
+from risklab.agents.base import Agent, AgentConfig
+from risklab.agents.registry import AgentRegistry
 
 @AgentRegistry.register("openai")
 class OpenAIAgent(Agent):
@@ -987,7 +987,7 @@ class OpenAIAgent(Agent):
 ### Adding a New Protocol
 
 ```python
-from mas_risk_toolkit.protocols.base import InteractionProtocol
+from risklab.protocols.base import InteractionProtocol
 
 class MyCustomProtocol(InteractionProtocol):
     def get_next_speaker(self):

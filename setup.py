@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="mas-risk-toolkit",
+    name="risklab",
     version="0.1.0",
     description=(
         "A controlled multi-agent interaction framework for instantiating, "
