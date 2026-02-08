@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 """
-Config Inspector — pretty-print the full structure of a MAS experiment.
+Config Inspector — pretty-print the structure of a MAS experiment config.
 
 Usage
 -----
+    # Simple overview (default)
     python -m risklab.inspect_config  path/to/config.yaml
+
+    # Show detailed sections
+    python -m risklab.inspect_config  path/to/config.yaml --topology --flow --agents
+
+    # Show everything
+    python -m risklab.inspect_config  path/to/config.yaml --all
+
+Options:
+    --topology, -t    Show detailed topology (adjacency matrix, edge list, degrees)
+    --flow, -f        Show detailed flow information (stages, diagram, named flows)
+    --agents, -a      Show detailed agent information (table with all fields)
+    --simulate, -s    Show simulated speaker sequence
+    --llm, -l         Show detailed LLM configuration
+    --all, -A         Show all details (equivalent to -t -f -a -s -l)
 
 Or as a library::
 
     from risklab.inspect_config import inspect_config
-    inspect_config("experiments/configs/example_tacit_collusion.yaml")
-
-The output includes:
-    • Experiment meta-data
-    • Task summary (+ inputs for acyclic pipelines)
-    • Communication topology (adjacency matrix, edges, degrees)
-    • Information flow (stages, cyclic/acyclic, stop conditions, named flows)
-    • Simulated speaker sequence (first round)
-    • Protocol & environment info
-    • Agents table
-    • Risks & evaluation metrics
+    inspect_config("experiments/configs/example_tacit_collusion.yaml", show_all=False)
 """
 
 from __future__ import annotations
@@ -198,14 +203,37 @@ def _simulate_speakers(
 # Main inspection
 # ======================================================================
 
-def inspect_config(config_path_or_dict) -> None:
+def inspect_config(
+    config_path_or_dict,
+    show_topology: bool = False,
+    show_flow: bool = False,
+    show_agents: bool = False,
+    show_simulate: bool = False,
+    show_llm: bool = False,
+    show_all: bool = False,
+) -> None:
     """Parse and pretty-print a YAML experiment config.
 
     Parameters
     ----------
     config_path_or_dict : str | Path | dict
         Either a file path to a YAML config, or an already-parsed dict.
+    show_topology : bool, optional
+        Show detailed topology (adjacency matrix, edge list, degrees). Default False.
+    show_flow : bool, optional
+        Show detailed flow information (stages, diagram, named flows). Default False.
+    show_agents : bool, optional
+        Show detailed agent information (table with all fields). Default False.
+    show_simulate : bool, optional
+        Show simulated speaker sequence. Default False.
+    show_llm : bool, optional
+        Show detailed LLM configuration. Default False.
+    show_all : bool, optional
+        Show all details (overrides other flags). Default False.
     """
+    if show_all:
+        show_topology = show_flow = show_agents = show_simulate = show_llm = True
+    
     if isinstance(config_path_or_dict, dict):
         config = config_path_or_dict
     else:
@@ -266,8 +294,9 @@ def inspect_config(config_path_or_dict) -> None:
     
     # If external path is specified, try to load it
     if llm_config_path:
-        print(_h2("LLM Configuration"))
-        print(_kv("source", f"external file: {_CYAN}{llm_config_path}{_RESET}"))
+        if show_llm:
+            print(_h2("LLM Configuration"))
+            print(_kv("source", f"external file: {_CYAN}{llm_config_path}{_RESET}"))
         try:
             # Attempt to resolve relative to the config file's directory
             if isinstance(config_path_or_dict, str):
@@ -280,18 +309,22 @@ def inspect_config(config_path_or_dict) -> None:
             if yaml is not None:
                 with open(full_path, "r", encoding="utf-8") as f:
                     llm_cfg = yaml.safe_load(f) or {}
-                print(_ok(f"Loaded from {full_path}"))
+                if show_llm:
+                    print(_ok(f"Loaded from {full_path}"))
             else:
-                print(_warn("PyYAML not installed — cannot load external LLM config"))
+                if show_llm:
+                    print(_warn("PyYAML not installed — cannot load external LLM config"))
                 llm_cfg = None
         except FileNotFoundError:
-            print(_err(f"File not found: {full_path}"))
+            if show_llm:
+                print(_err(f"File not found: {full_path}"))
             llm_cfg = None
         except Exception as e:
-            print(_err(f"Failed to load LLM config: {e}"))
+            if show_llm:
+                print(_err(f"Failed to load LLM config: {e}"))
             llm_cfg = None
     
-    if llm_cfg:
+    if llm_cfg and show_llm:
         if not llm_config_path:
             print(_h2("LLM Configuration"))
             print(_kv("source", f"{_DIM}inline in experiment config{_RESET}"))
@@ -314,7 +347,7 @@ def inspect_config(config_path_or_dict) -> None:
                 base_str = f"  base={api_base}" if api_base else ""
                 type_str = f"  type={api_type}" if api_type != "openai" else ""
                 print(_bullet(f"{_BOLD}{pname}{_RESET}  key={key_display}{base_str}{type_str}"))
-    elif not llm_config_path:
+    elif not llm_config_path and show_llm:
         print(_h2("LLM Configuration"))
         print(_kv("status", f"{_DIM}(not specified — will use environment variables){_RESET}"))
 
@@ -326,37 +359,39 @@ def inspect_config(config_path_or_dict) -> None:
     flow: Optional[InformationFlowConfig] = None
 
     if topo_cfg:
-        print(_h2("Communication Topology"))
         topo, flow = build_topology_from_config(topo_cfg)
-
         agents = topo.agent_ids
+        
+        # Always show basic topology info
+        print(_h2("Communication Topology"))
         print(_kv("agents", f"{len(agents)}  {agents}"))
         print(_kv("directed", topo.directed))
-
         edges = topo.get_edges()
         print(_kv("edges", f"{len(edges)} directed edge(s)"))
+        
+        # Detailed topology only if requested
+        if show_topology:
+            # Degree table
+            print()
+            print(f"    {_BOLD}{'Agent':<20} {'Out-degree':>10} {'In-degree':>10}{_RESET}")
+            print(f"    {'─' * 42}")
+            for a in agents:
+                out_d = topo.out_degree(a)
+                in_d = topo.in_degree(a)
+                out_str = f"{_GREEN}{out_d}{_RESET}" if out_d > 0 else f"{_DIM}0{_RESET}"
+                in_str = f"{_CYAN}{in_d}{_RESET}" if in_d > 0 else f"{_DIM}0{_RESET}"
+                print(f"    {a:<20} {out_str:>19} {in_str:>19}")
 
-        # Degree table
-        print()
-        print(f"    {_BOLD}{'Agent':<20} {'Out-degree':>10} {'In-degree':>10}{_RESET}")
-        print(f"    {'─' * 42}")
-        for a in agents:
-            out_d = topo.out_degree(a)
-            in_d = topo.in_degree(a)
-            out_str = f"{_GREEN}{out_d}{_RESET}" if out_d > 0 else f"{_DIM}0{_RESET}"
-            in_str = f"{_CYAN}{in_d}{_RESET}" if in_d > 0 else f"{_DIM}0{_RESET}"
-            print(f"    {a:<20} {out_str:>19} {in_str:>19}")
+            # Adjacency matrix
+            print()
+            print(f"    {_BOLD}Adjacency Matrix:{_RESET}")
+            _print_matrix(agents, topo.get_adjacency_matrix())
 
-        # Adjacency matrix
-        print()
-        print(f"    {_BOLD}Adjacency Matrix:{_RESET}")
-        _print_matrix(agents, topo.get_adjacency_matrix())
-
-        # Edge list (readable)
-        print()
-        print(f"    {_BOLD}Edge List:{_RESET}")
-        for s, r in edges:
-            print(_bullet(f"{s} → {r}"))
+            # Edge list (readable)
+            print()
+            print(f"    {_BOLD}Edge List:{_RESET}")
+            for s, r in edges:
+                print(_bullet(f"{s} → {r}"))
 
     # ------------------------------------------------------------------
     # 4. Information Flow
@@ -369,50 +404,53 @@ def inspect_config(config_path_or_dict) -> None:
 
         if flow.flow_order:
             print(_kv("flow_order", f"{flow.num_stages} stage(s)"))
-            print()
-            print(f"    {_BOLD}Stages:{_RESET}")
-            for idx, stage in enumerate(flow.stages):
-                marker = "↻" if (idx == flow.num_stages - 1 and flow.cyclic) else " "
-                print(f"      {_DIM}[{idx}]{_RESET} {_stage_repr(stage)}  {_DIM}{marker}{_RESET}")
-            print()
-            print(f"    {_BOLD}Flow Diagram:{_RESET}")
-            print(f"      {_flow_diagram(flow.stages)}")
-            if flow.cyclic:
-                print(f"      {_DIM}↻ (loops back to stage 0){_RESET}")
-
-            # Warn about repeated agents across stages
-            all_flat = flatten_flow_order(flow.stages)
-            seen = {}
-            for a in all_flat:
-                seen[a] = seen.get(a, 0) + 1
-            repeated = {a: c for a, c in seen.items() if c > 1}
-            if repeated:
+            
+            # Detailed flow info only if requested
+            if show_flow:
                 print()
-                for a, c in repeated.items():
-                    stages_at = [
-                        i for i, st in enumerate(flow.stages)
-                        if a in stage_agents(st)
-                    ]
-                    print(_warn(
-                        f"Agent \"{a}\" appears in {c} stages: {stages_at}. "
-                        f"It will speak {c} time(s) per round."
-                    ))
+                print(f"    {_BOLD}Stages:{_RESET}")
+                for idx, stage in enumerate(flow.stages):
+                    marker = "↻" if (idx == flow.num_stages - 1 and flow.cyclic) else " "
+                    print(f"      {_DIM}[{idx}]{_RESET} {_stage_repr(stage)}  {_DIM}{marker}{_RESET}")
+                print()
+                print(f"    {_BOLD}Flow Diagram:{_RESET}")
+                print(f"      {_flow_diagram(flow.stages)}")
+                if flow.cyclic:
+                    print(f"      {_DIM}↻ (loops back to stage 0){_RESET}")
 
-        # Stop conditions
-        if flow.stop_conditions:
+                # Warn about repeated agents across stages
+                all_flat = flatten_flow_order(flow.stages)
+                seen = {}
+                for a in all_flat:
+                    seen[a] = seen.get(a, 0) + 1
+                repeated = {a: c for a, c in seen.items() if c > 1}
+                if repeated:
+                    print()
+                    for a, c in repeated.items():
+                        stages_at = [
+                            i for i, st in enumerate(flow.stages)
+                            if a in stage_agents(st)
+                        ]
+                        print(_warn(
+                            f"Agent \"{a}\" appears in {c} stages: {stages_at}. "
+                            f"It will speak {c} time(s) per round."
+                        ))
+
+        # Stop conditions (show if requested or if present)
+        if flow.stop_conditions and show_flow:
             print()
             print(f"    {_BOLD}Stop Conditions:{_RESET}")
             for sc in flow.stop_conditions:
                 params = ", ".join(f"{k}={v}" for k, v in sc.parameters.items())
                 print(_bullet(f"{sc.condition_type.value}  ({params})"))
 
-        # Trigger
-        if flow.trigger:
+        # Trigger (show if requested)
+        if flow.trigger and show_flow:
             params = ", ".join(f"{k}={v}" for k, v in flow.trigger.parameters.items()) if flow.trigger.parameters else ""
             print(_kv("trigger", f"{flow.trigger.trigger_type.value}  {_DIM}{params}{_RESET}"))
 
-        # Named sub-flows
-        if flow.flows:
+        # Named sub-flows (show if requested)
+        if flow.flows and show_flow:
             print()
             print(f"    {_BOLD}Named Sub-Flows ({len(flow.flows)}):{_RESET}")
             for fp in flow.flows:
@@ -420,19 +458,20 @@ def inspect_config(config_path_or_dict) -> None:
                 desc = f"  {_DIM}— {fp.description}{_RESET}" if fp.description else ""
                 print(f"      {_MAGENTA}{fp.flow_id}{_RESET}: {diagram}{desc}")
 
-        # Validation checks
-        print()
-        if flow.cyclic:
-            overlap = set(flow.entry_nodes) & set(flow.exit_nodes)
-            if overlap:
-                print(_ok(f"Cyclic validation: entry ∩ exit = {overlap}"))
+        # Validation checks (show if detailed flow requested)
+        if show_flow:
+            print()
+            if flow.cyclic:
+                overlap = set(flow.entry_nodes) & set(flow.exit_nodes)
+                if overlap:
+                    print(_ok(f"Cyclic validation: entry ∩ exit = {overlap}"))
+                else:
+                    print(_err("Cyclic validation FAILED: entry ∩ exit = ∅"))
             else:
-                print(_err("Cyclic validation FAILED: entry ∩ exit = ∅"))
-        else:
-            if set(flow.entry_nodes) != set(flow.exit_nodes):
-                print(_ok("Acyclic validation: entry ≠ exit"))
-            else:
-                print(_warn("Acyclic flow but entry == exit. Consider cyclic: true?"))
+                if set(flow.entry_nodes) != set(flow.exit_nodes):
+                    print(_ok("Acyclic validation: entry ≠ exit"))
+                else:
+                    print(_warn("Acyclic flow but entry == exit. Consider cyclic: true?"))
 
     # ------------------------------------------------------------------
     # 5. Simulated Speaker Sequence
@@ -441,7 +480,7 @@ def inspect_config(config_path_or_dict) -> None:
     agent_cfgs = config.get("agents", [])
     all_agent_ids = topo_cfg.get("agents", []) if topo_cfg else [a["agent_id"] for a in agent_cfgs]
 
-    if topo and flow and proto_cfg:
+    if topo and flow and proto_cfg and show_simulate:
         sim_label = (
             "Simulated Speaker Sequence (≤ 3 rounds)"
             if flow.cyclic
@@ -497,31 +536,38 @@ def inspect_config(config_path_or_dict) -> None:
     # ------------------------------------------------------------------
     if agent_cfgs:
         print(_h2(f"Agents ({len(agent_cfgs)})"))
-        print()
-        print(f"    {_BOLD}{'ID':<20} {'Role':<15} {'Model':<18} {'Objective':<15}{_RESET}")
-        print(f"    {'─' * 68}")
-        for a in agent_cfgs:
-            agent_id = a.get("agent_id", "?")
-            role = a.get("role", "—")
-            model = a.get("model", "—")
-            obj = a.get("objective", "—")
-            print(f"    {agent_id:<20} {role:<15} {model:<18} {obj:<15}")
-        # Check if any agent has system_prompt
-        has_prompts = [a["agent_id"] for a in agent_cfgs if a.get("system_prompt")]
-        if has_prompts:
+        
+        if show_agents:
+            # Detailed table
             print()
-            print(f"    {_DIM}Agents with system_prompt: {has_prompts}{_RESET}")
-        # Check per-agent LLM overrides
-        has_overrides = [
-            a["agent_id"] for a in agent_cfgs
-            if a.get("temperature") is not None
-            or a.get("max_tokens") is not None
-            or a.get("api_key")
-            or a.get("api_base")
-            or a.get("provider")
-        ]
-        if has_overrides:
-            print(f"    {_DIM}Agents with per-agent LLM overrides: {has_overrides}{_RESET}")
+            print(f"    {_BOLD}{'ID':<20} {'Role':<15} {'Model':<18} {'Objective':<15}{_RESET}")
+            print(f"    {'─' * 68}")
+            for a in agent_cfgs:
+                agent_id = a.get("agent_id", "?")
+                role = a.get("role", "—")
+                model = a.get("model", "—")
+                obj = a.get("objective", "—")
+                print(f"    {agent_id:<20} {role:<15} {model:<18} {obj:<15}")
+            # Check if any agent has system_prompt
+            has_prompts = [a["agent_id"] for a in agent_cfgs if a.get("system_prompt")]
+            if has_prompts:
+                print()
+                print(f"    {_DIM}Agents with system_prompt: {has_prompts}{_RESET}")
+            # Check per-agent LLM overrides
+            has_overrides = [
+                a["agent_id"] for a in agent_cfgs
+                if a.get("temperature") is not None
+                or a.get("max_tokens") is not None
+                or a.get("api_key")
+                or a.get("api_base")
+                or a.get("provider")
+            ]
+            if has_overrides:
+                print(f"    {_DIM}Agents with per-agent LLM overrides: {has_overrides}{_RESET}")
+        else:
+            # Simple list
+            agent_ids = [a.get("agent_id", "?") for a in agent_cfgs]
+            print(_kv("agent_ids", agent_ids))
 
     # ------------------------------------------------------------------
     # 9. Risks
@@ -562,6 +608,11 @@ def inspect_config(config_path_or_dict) -> None:
             print(_kv("total runs", f"{seeds} episode(s)"))
 
     print()
+    
+    # Show hint if not showing all details
+    if not show_all and not (show_topology and show_flow and show_agents and show_simulate and show_llm):
+        print(f"{_DIM}💡 Tip: Use --all or specific flags (-t -f -a -s -l) to see more details{_RESET}")
+        print()
 
 
 # ======================================================================
@@ -574,16 +625,64 @@ def main() -> None:
         sys.exit(1)
 
     parser = argparse.ArgumentParser(
-        description="Inspect a MAS-Risk-Toolkit YAML experiment config.",
+        description="Inspect a RiskLab YAML experiment config.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Example:\n  python -m risklab.inspect_config experiments/configs/example_tacit_collusion.yaml",
+        epilog="""Examples:
+  # Simple overview (default)
+  python -m risklab.inspect_config experiments/configs/example_tacit_collusion.yaml
+
+  # Show detailed topology and flow
+  python -m risklab.inspect_config experiments/configs/example_tacit_collusion.yaml -t -f
+
+  # Show everything
+  python -m risklab.inspect_config experiments/configs/example_tacit_collusion.yaml --all
+""",
     )
     parser.add_argument(
         "config",
         help="Path to the YAML experiment config file.",
     )
+    parser.add_argument(
+        "-t", "--topology",
+        action="store_true",
+        help="Show detailed topology (adjacency matrix, edge list, degrees)",
+    )
+    parser.add_argument(
+        "-f", "--flow",
+        action="store_true",
+        help="Show detailed flow information (stages, diagram, validation)",
+    )
+    parser.add_argument(
+        "-a", "--agents",
+        action="store_true",
+        help="Show detailed agent table with roles, models, objectives",
+    )
+    parser.add_argument(
+        "-s", "--simulate",
+        action="store_true",
+        help="Show simulated speaker sequence",
+    )
+    parser.add_argument(
+        "-l", "--llm",
+        action="store_true",
+        help="Show detailed LLM configuration",
+    )
+    parser.add_argument(
+        "-A", "--all",
+        action="store_true",
+        help="Show all details (equivalent to -t -f -a -s -l)",
+    )
     args = parser.parse_args()
-    inspect_config(args.config)
+    
+    inspect_config(
+        args.config,
+        show_topology=args.topology,
+        show_flow=args.flow,
+        show_agents=args.agents,
+        show_simulate=args.simulate,
+        show_llm=args.llm,
+        show_all=args.all,
+    )
 
 
 if __name__ == "__main__":

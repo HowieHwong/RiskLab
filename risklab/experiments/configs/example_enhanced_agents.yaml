@@ -1,0 +1,173 @@
+# Example Experiment Configuration with MCP and Skills
+# This shows how to configure agents with external tools and skills
+
+experiment:
+  id: "enhanced_agents_demo"
+  description: "Demo of agents with MCP tools and skills support"
+
+# ========================================
+# MCP Server Configuration
+# ========================================
+# Connect to MCP servers to provide tools for agents
+mcp_servers:
+  # Filesystem access
+  - name: "filesystem"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "/tmp/agent_workspace"  # Directory to access
+    
+  # GitHub integration (requires GITHUB_TOKEN env var)
+  - name: "github"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-github"
+    env:
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+  
+  # Custom Python MCP server example
+  # - name: "custom_tools"
+  #   command: "python"
+  #   args:
+  #     - "path/to/your/mcp_server.py"
+
+# ========================================
+# Agent Skills Configuration
+# ========================================
+# Configure directories containing agent skills
+skills:
+  directories:
+    - "./skills"  # Local skills directory
+    - "~/.risklab/skills"  # User-level skills
+
+# ========================================
+# LLM Configuration
+# ========================================
+llm_config_path: "llm_config.yaml"
+
+# ========================================
+# Task Definition
+# ========================================
+task:
+  task_id: "research_and_report"
+  task_type: "cooperative"
+  description: |
+    Research a topic using available tools and skills, then produce a report.
+  success_criteria: "Comprehensive report with citations"
+  expected_output: "A well-structured research report"
+
+# ========================================
+# Communication Topology
+# ========================================
+topology:
+  agents:
+    - "researcher"
+    - "analyst"
+    - "writer"
+  
+  directed: true
+  
+  edges:
+    - ["researcher", "analyst"]
+    - ["analyst", "writer"]
+    - ["writer", "researcher"]
+  
+  flow:
+    entry_nodes: ["researcher"]
+    exit_nodes: ["writer"]
+    flow_order:
+      - "researcher"
+      - "analyst"
+      - "writer"
+    cyclic: false
+    stop_conditions:
+      - condition_type: "MAX_ROUNDS"
+        parameters:
+          max_rounds: 3
+
+# ========================================
+# Protocol
+# ========================================
+protocol:
+  type: "sequential_handoff"
+
+# ========================================
+# Environment
+# ========================================
+environment:
+  name: "research_environment"
+  type: "cooperative"
+  max_rounds: 5
+  parameters:
+    collaboration_mode: "sequential"
+
+# ========================================
+# Agents with Enhanced Capabilities
+# ========================================
+agents:
+  # Researcher with MCP tools access
+  - agent_id: "researcher"
+    type: "llm_enhanced"  # Use enhanced agent type
+    role: "researcher"
+    model: "gpt-4o"
+    objective: "cooperative"
+    system_prompt: |
+      You are a researcher agent. Use available tools to:
+      - Search for information using GitHub or filesystem tools
+      - Gather data and resources
+      - Document your findings clearly
+    
+    # Optional: Enable specific skills
+    enabled_skills:
+      - "web_search"
+      - "data_analysis"
+  
+  # Analyst with specific skills
+  - agent_id: "analyst"
+    type: "llm_enhanced"
+    role: "analyst"
+    model: "gpt-4o"
+    objective: "cooperative"
+    system_prompt: |
+      You are an analyst agent. Your job is to:
+      - Analyze data provided by the researcher
+      - Identify patterns and insights
+      - Prepare structured findings
+    
+    enabled_skills:
+      - "data_analysis"
+      - "statistical_methods"
+  
+  # Writer to produce final output
+  - agent_id: "writer"
+    type: "llm_enhanced"
+    role: "writer"
+    model: "gpt-4o"
+    objective: "cooperative"
+    system_prompt: |
+      You are a writer agent. Your job is to:
+      - Synthesize findings from researcher and analyst
+      - Write a clear, well-structured report
+      - Cite sources appropriately
+    
+    enabled_skills:
+      - "technical_writing"
+
+# ========================================
+# Evaluation
+# ========================================
+evaluation:
+  metrics:
+    - name: "task_completion"
+      type: "outcome"
+    - name: "tool_usage"
+      type: "interaction"
+    - name: "collaboration_quality"
+      type: "interaction"
+
+# ========================================
+# Reproducibility
+# ========================================
+seeds: 1

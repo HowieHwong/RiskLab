@@ -104,10 +104,77 @@ pip install -e .
 # Optional: install LLM provider libraries
 pip install -e ".[openai]"       # for OpenAI models (gpt-4o, o1, …)
 pip install -e ".[anthropic]"    # for Anthropic models (claude-3-opus, …)
-pip install -e ".[all_llm]"     # all supported LLM providers
+pip install -e ".[mcp]"          # for MCP (Model Context Protocol) support
+pip install -e ".[all]"          # all features (LLM + MCP)
 ```
 
-### 2. Configure LLM API Keys
+### 2. MCP and Skills Support (Optional)
+
+RiskLab supports two powerful extension mechanisms for enhanced agent capabilities:
+
+#### Model Context Protocol (MCP)
+
+Connect agents to external tools and services through MCP servers.
+
+**Installation:**
+```bash
+pip install -e ".[mcp]"
+```
+
+**Configuration:**
+```yaml
+# In your experiment config
+mcp_servers:
+  - name: "filesystem"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/dir"]
+  
+  - name: "github"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+```
+
+**Available MCP Servers:** filesystem, GitHub, PostgreSQL, Slack, Google Maps, Brave Search, and more. See [MCP Registry](https://github.com/modelcontextprotocol/servers).
+
+#### Agent Skills
+
+Modular, reusable capability packages defined as folders with instructions.
+
+**Configuration:**
+```yaml
+# In your experiment config
+skills:
+  directories:
+    - "./skills"              # Local project skills
+    - "~/.risklab/skills"     # User-level skills
+```
+
+**Creating a Skill:**
+```
+my_skill/
+├── skill.md          # Main description (REQUIRED)
+├── examples/         # Usage examples (optional)
+├── scripts/          # Helper scripts (optional)
+└── resources/        # Additional resources (optional)
+```
+
+**Using Enhanced Agents:**
+```yaml
+agents:
+  - agent_id: "researcher"
+    type: "llm_enhanced"  # Enhanced agent with MCP & skills
+    role: "researcher"
+    model: "gpt-4o"
+    enabled_skills:
+      - "web_search"
+      - "data_analysis"
+```
+
+See `examples/mcp_skills_quickstart.py` and `risklab/experiments/configs/example_enhanced_agents.yaml` for complete examples.
+
+### 3. Configure LLM API Keys
 
 #### Recommended: Separate LLM Config File
 
@@ -882,41 +949,95 @@ Built-in criteria: `task_completed`, `round_budget`, `output_match`, `numeric_th
 
 ### 9. Inspect a Config (CLI)
 
-Before running an experiment you can **inspect** any YAML config to see
-the full MAS structure at a glance — topology, flow diagram, simulated
-speaker order, agent table, risks, etc.
+The `inspect_config` tool provides an interactive way to explore experiment configurations. By default, it shows a concise summary. Use flags for detailed views.
+
+#### Basic Usage (Concise Output)
 
 ```bash
-# From the repo root (requires PyYAML):
-python -m risklab.inspect_config  risklab/experiments/configs/example_multi_flow.yaml
+python -m risklab.inspect_config path/to/config.yaml
 ```
 
-Or from Python:
+**Default output includes:**
+- Experiment ID and description
+- Task summary
+- Topology basics (agents, edges)
+- Information flow basics (entry/exit, cyclic/acyclic, stages)
+- Protocol and environment
+- Agent IDs list
+- Risk detectors and evaluation metrics
+- Reproducibility settings
+
+#### Detailed Views
+
+```bash
+# Show detailed topology (adjacency matrix, edge list, degrees)
+python -m risklab.inspect_config config.yaml -t
+
+# Show detailed flow (stages, diagram, validation)
+python -m risklab.inspect_config config.yaml -f
+
+# Show detailed agent table
+python -m risklab.inspect_config config.yaml -a
+
+# Show simulated speaker sequence
+python -m risklab.inspect_config config.yaml -s
+
+# Show detailed LLM configuration
+python -m risklab.inspect_config config.yaml -l
+
+# Show everything
+python -m risklab.inspect_config config.yaml --all
+
+# Combine specific flags
+python -m risklab.inspect_config config.yaml -t -f -a
+```
+
+#### Available Flags
+
+| Flag | Long Form | Description |
+|------|-----------|-------------|
+| `-t` | `--topology` | Show adjacency matrix, edge list, and degrees |
+| `-f` | `--flow` | Show flow stages, diagram, and validation |
+| `-a` | `--agents` | Show detailed agent table with roles and models |
+| `-s` | `--simulate` | Show simulated speaker sequence |
+| `-l` | `--llm` | Show detailed LLM configuration |
+| `-A` | `--all` | Show all details (equivalent to `-t -f -a -s -l`) |
+
+#### Example Concise Output
+
+```
+═══════════════════════════════════════════════════════════
+  Experiment: tacit_collusion_exp
+═══════════════════════════════════════════════════════════
+
+── Communication Topology ──
+  agents: 3  ['firm_A', 'firm_B', 'firm_C']
+  directed: True
+  edges: 6 directed edge(s)
+
+── Information Flow ──
+  entry_nodes: ['firm_A', 'firm_B', 'firm_C']
+  exit_nodes: ['firm_A', 'firm_B', 'firm_C']
+  cyclic: True (loops)
+  flow_order: 4 stage(s)
+
+💡 Tip: Use --all or specific flags (-t -f -a -s -l) to see more details
+```
+
+#### Python API
 
 ```python
-from risklab.inspect_config import inspect_config
+from risklab import inspect_config
 
-inspect_config("risklab/experiments/configs/example_multi_flow.yaml")
+# Default concise view
+inspect_config("config.yaml")
 
-# You can also pass an already-parsed dict instead of a file path:
-inspect_config(my_config_dict)
+# Show specific details
+inspect_config("config.yaml", show_topology=True, show_flow=True)
+
+# Show everything
+inspect_config("config.yaml", show_all=True)
 ```
-
-**What it prints:**
-
-| Section | Content |
-|---------|---------|
-| Experiment | ID, description |
-| Task | ID, type, description, success criteria, inline inputs |
-| Communication Topology | Agents, directed/undirected, degree table, adjacency matrix, edge list |
-| Information Flow | Entry / exit nodes, cyclic vs. acyclic, stages (parallel highlighted), flow diagram, stop conditions, trigger, named sub-flows, validation checks |
-| Simulated Speaker Sequence | Protocol-driven simulation of who speaks → who listens, round by round |
-| Protocol | Type + parameters |
-| Environment | Name, type, max rounds |
-| Agents | Table of ID / role / model / objective; system prompts flagged |
-| Risk Detectors | Registered risk types and parameters |
-| Evaluation Metrics | Metric name + category |
-| Reproducibility | Seeds × inputs = total runs |
 
 ### 10. Example Experiment Configs
 

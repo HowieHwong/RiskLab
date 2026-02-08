@@ -15,6 +15,8 @@ Core Layers
 - risks         : Risk definitions & indicators
 - evaluation    : Metrics, logging, task evaluation
 - experiments   : Reproducible experiment configs & runner
+- mcp_integration : Model Context Protocol support for external tools
+- skills        : Agent Skills support for modular capabilities
 """
 
 __version__ = "0.1.0"
@@ -37,6 +39,24 @@ from risklab.experiments.config_loader import (
 )
 from risklab.inspect_config import inspect_config
 
+# MCP and Skills (optional dependencies)
+try:
+    from risklab.agents.enhanced_llm_agent import EnhancedLLMAgent
+    from risklab.mcp_integration import MCPClient, MCPServerConfig, load_mcp_config
+    from risklab.skills import Skill, SkillRegistry, load_skills_config
+    MCP_AVAILABLE = True
+    SKILLS_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    SKILLS_AVAILABLE = False
+    EnhancedLLMAgent = None  # type: ignore
+    MCPClient = None  # type: ignore
+    MCPServerConfig = None  # type: ignore
+    load_mcp_config = None  # type: ignore
+    Skill = None  # type: ignore
+    SkillRegistry = None  # type: ignore
+    load_skills_config = None  # type: ignore
+
 __all__ = [
     "Agent",
     "AgentConfig",
@@ -58,3 +78,15 @@ __all__ = [
     "load_experiment_config",
     "inspect_config",
 ]
+
+# Conditionally add MCP and Skills to __all__
+if MCP_AVAILABLE and SKILLS_AVAILABLE:
+    __all__.extend([
+        "EnhancedLLMAgent",
+        "MCPClient",
+        "MCPServerConfig",
+        "load_mcp_config",
+        "Skill",
+        "SkillRegistry",
+        "load_skills_config",
+    ])

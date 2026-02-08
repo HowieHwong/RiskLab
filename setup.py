@@ -8,7 +8,7 @@ setup(
     description=(
         "A controlled multi-agent interaction framework for instantiating, "
         "probing, and measuring emergent social risks in LLM-based agent "
-        "collectives."
+        "collectives. Supports MCP tools and Agent Skills."
     ),
     author="Yue Huang et al.",
     packages=find_packages(),
@@ -20,6 +20,8 @@ setup(
         "openai": ["openai>=1.0"],
         "anthropic": ["anthropic>=0.20"],
         "all_llm": ["openai>=1.0", "anthropic>=0.20"],
+        "mcp": ["mcp>=1.0.0"],  # Model Context Protocol support
+        "all": ["openai>=1.0", "anthropic>=0.20", "mcp>=1.0.0"],
         "dev": ["pytest", "ruff"],
     },
 )
