@@ -104,77 +104,10 @@ pip install -e .
 # Optional: install LLM provider libraries
 pip install -e ".[openai]"       # for OpenAI models (gpt-4o, o1, …)
 pip install -e ".[anthropic]"    # for Anthropic models (claude-3-opus, …)
-pip install -e ".[mcp]"          # for MCP (Model Context Protocol) support
-pip install -e ".[all]"          # all features (LLM + MCP)
+pip install -e ".[all_llm]"     # all supported LLM providers
 ```
 
-### 2. MCP and Skills Support (Optional)
-
-RiskLab supports two powerful extension mechanisms for enhanced agent capabilities:
-
-#### Model Context Protocol (MCP)
-
-Connect agents to external tools and services through MCP servers.
-
-**Installation:**
-```bash
-pip install -e ".[mcp]"
-```
-
-**Configuration:**
-```yaml
-# In your experiment config
-mcp_servers:
-  - name: "filesystem"
-    command: "npx"
-    args: ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/dir"]
-  
-  - name: "github"
-    command: "npx"
-    args: ["-y", "@modelcontextprotocol/server-github"]
-    env:
-      GITHUB_TOKEN: "${GITHUB_TOKEN}"
-```
-
-**Available MCP Servers:** filesystem, GitHub, PostgreSQL, Slack, Google Maps, Brave Search, and more. See [MCP Registry](https://github.com/modelcontextprotocol/servers).
-
-#### Agent Skills
-
-Modular, reusable capability packages defined as folders with instructions.
-
-**Configuration:**
-```yaml
-# In your experiment config
-skills:
-  directories:
-    - "./skills"              # Local project skills
-    - "~/.risklab/skills"     # User-level skills
-```
-
-**Creating a Skill:**
-```
-my_skill/
-├── skill.md          # Main description (REQUIRED)
-├── examples/         # Usage examples (optional)
-├── scripts/          # Helper scripts (optional)
-└── resources/        # Additional resources (optional)
-```
-
-**Using Enhanced Agents:**
-```yaml
-agents:
-  - agent_id: "researcher"
-    type: "llm_enhanced"  # Enhanced agent with MCP & skills
-    role: "researcher"
-    model: "gpt-4o"
-    enabled_skills:
-      - "web_search"
-      - "data_analysis"
-```
-
-See `examples/mcp_skills_quickstart.py` and `risklab/experiments/configs/example_enhanced_agents.yaml` for complete examples.
-
-### 3. Configure LLM API Keys
+### 2. Configure LLM API Keys
 
 #### Recommended: Separate LLM Config File
 
@@ -949,97 +882,191 @@ Built-in criteria: `task_completed`, `round_budget`, `output_match`, `numeric_th
 
 ### 9. Inspect a Config (CLI)
 
-The `inspect_config` tool provides an interactive way to explore experiment configurations. By default, it shows a concise summary. Use flags for detailed views.
-
-#### Basic Usage (Concise Output)
-
-```bash
-python -m risklab.inspect_config path/to/config.yaml
-```
-
-**Default output includes:**
-- Experiment ID and description
-- Task summary
-- Topology basics (agents, edges)
-- Information flow basics (entry/exit, cyclic/acyclic, stages)
-- Protocol and environment
-- Agent IDs list
-- Risk detectors and evaluation metrics
-- Reproducibility settings
-
-#### Detailed Views
+Before running an experiment you can **inspect** any YAML config to see
+the full MAS structure at a glance. The default output is concise; use
+flags to show detailed sections.
 
 ```bash
-# Show detailed topology (adjacency matrix, edge list, degrees)
-python -m risklab.inspect_config config.yaml -t
+# Default (concise)
+python -m risklab.inspect_config  risklab/experiments/configs/example_multi_flow.yaml
 
-# Show detailed flow (stages, diagram, validation)
-python -m risklab.inspect_config config.yaml -f
-
-# Show detailed agent table
-python -m risklab.inspect_config config.yaml -a
-
-# Show simulated speaker sequence
-python -m risklab.inspect_config config.yaml -s
-
-# Show detailed LLM configuration
-python -m risklab.inspect_config config.yaml -l
+# Show detailed topology + flow
+python -m risklab.inspect_config  risklab/experiments/configs/example_multi_flow.yaml -t -f
 
 # Show everything
-python -m risklab.inspect_config config.yaml --all
-
-# Combine specific flags
-python -m risklab.inspect_config config.yaml -t -f -a
+python -m risklab.inspect_config  risklab/experiments/configs/example_multi_flow.yaml --all
 ```
 
-#### Available Flags
+**Flags**
 
-| Flag | Long Form | Description |
-|------|-----------|-------------|
-| `-t` | `--topology` | Show adjacency matrix, edge list, and degrees |
-| `-f` | `--flow` | Show flow stages, diagram, and validation |
-| `-a` | `--agents` | Show detailed agent table with roles and models |
-| `-s` | `--simulate` | Show simulated speaker sequence |
-| `-l` | `--llm` | Show detailed LLM configuration |
-| `-A` | `--all` | Show all details (equivalent to `-t -f -a -s -l`) |
+- `-t, --topology`: adjacency matrix, edge list, degree table
+- `-f, --flow`: stages, flow diagram, named flows, validation
+- `-a, --agents`: detailed agent table (role/model/objective)
+- `-s, --simulate`: simulated speaker sequence
+- `-l, --llm`: detailed LLM configuration
+- `-A, --all`: all of the above
 
-#### Example Concise Output
+**Default output includes**
 
-```
-═══════════════════════════════════════════════════════════
-  Experiment: tacit_collusion_exp
-═══════════════════════════════════════════════════════════
+- Experiment ID + description
+- Task summary
+- Topology basics (agents, directed, edge count)
+- Flow basics (entry/exit, cyclic/acyclic, stage count)
+- Protocol + environment
+- Agent IDs list
+- Risks + metrics
+- Reproducibility (seeds)
 
-── Communication Topology ──
-  agents: 3  ['firm_A', 'firm_B', 'firm_C']
-  directed: True
-  edges: 6 directed edge(s)
+**Detailed output adds**
 
-── Information Flow ──
-  entry_nodes: ['firm_A', 'firm_B', 'firm_C']
-  exit_nodes: ['firm_A', 'firm_B', 'firm_C']
-  cyclic: True (loops)
-  flow_order: 4 stage(s)
+- Degree table, adjacency matrix, edge list
+- Flow stages + diagram + stop/trigger + named subflows
+- Simulated speaker sequence
+- LLM config details
+- Full agent table
 
-💡 Tip: Use --all or specific flags (-t -f -a -s -l) to see more details
-```
-
-#### Python API
+Or from Python:
 
 ```python
-from risklab import inspect_config
+from risklab.inspect_config import inspect_config
 
-# Default concise view
-inspect_config("config.yaml")
-
-# Show specific details
-inspect_config("config.yaml", show_topology=True, show_flow=True)
-
-# Show everything
-inspect_config("config.yaml", show_all=True)
+inspect_config("risklab/experiments/configs/example_multi_flow.yaml")
+inspect_config("risklab/experiments/configs/example_multi_flow.yaml", show_topology=True, show_flow=True)
+inspect_config("risklab/experiments/configs/example_multi_flow.yaml", show_all=True)
 ```
 
-### 10. Example Experiment Configs
+### 10. MCP and Agent Skills (Optional)
+
+RiskLab supports two extension mechanisms:
+
+- **Model Context Protocol (MCP)** — connect to external tools and services
+- **Agent Skills** — modular, reusable capability packages
+
+#### Installation
+
+```bash
+# MCP support
+pip install mcp
+```
+
+Skills are file-based and require no extra dependencies.
+
+#### MCP server configuration
+
+```yaml
+mcp_servers:
+  - name: "filesystem"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/dir"]
+
+  - name: "github"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+```
+
+#### Skills configuration
+
+```yaml
+skills:
+  directories:
+    - "./skills"
+    - "~/.risklab/skills"
+```
+
+#### Enhanced agents
+
+```yaml
+agents:
+  - agent_id: "researcher"
+    type: "llm_enhanced"
+    role: "researcher"
+    model: "gpt-4o"
+    objective: "cooperative"
+    enabled_skills:
+      - "web_search"
+      - "data_analysis"
+```
+
+#### Skill directory structure
+
+```
+my_skill/
+├── skill.md          # Main skill description (required)
+├── examples/         # Usage examples (optional)
+├── scripts/          # Helper scripts (optional)
+└── resources/        # Additional resources (optional)
+```
+
+#### `skill.md` format
+
+```markdown
+# Skill Name
+
+Brief description of what this skill does.
+
+## Description
+
+Detailed description of capabilities provided.
+
+## Instructions
+
+1. First step
+2. Second step
+3. Third step
+```
+
+#### Simple MCP server (Python)
+
+```python
+#!/usr/bin/env python3
+from mcp.server import Server
+from mcp import types
+
+server = Server("my-tool-server")
+
+@server.list_tools()
+async def list_tools() -> list[types.Tool]:
+    return [
+        types.Tool(
+            name="calculate",
+            description="Perform calculations",
+            inputSchema={
+                "type": "object",
+                "properties": {"expression": {"type": "string"}},
+                "required": ["expression"],
+            },
+        )
+    ]
+
+@server.call_tool()
+async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
+    if name == "calculate":
+        result = eval(arguments["expression"])  # Use safely in production!
+        return [types.TextContent(type="text", text=f"Result: {result}")]
+    raise ValueError(f"Unknown tool: {name}")
+```
+
+#### Tool call format (agent response)
+
+```
+{
+  "tool_call": {
+    "server": "filesystem",
+    "tool": "read_file",
+    "arguments": {"path": "/path/to/file"}
+  }
+}
+```
+
+#### Resources
+
+- MCP SDK: https://github.com/modelcontextprotocol/python-sdk
+- MCP servers: https://github.com/modelcontextprotocol/servers
+- Agent Skills: https://github.com/agentskills/agentskills
+
+### 11. Example Experiment Configs
 
 The toolkit ships with four example configs:
 
