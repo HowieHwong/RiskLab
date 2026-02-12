@@ -18,9 +18,9 @@ task:
   task_id: "market_price_competition"
   task_type: "market_trading"
   description: >
-    Three sellers compete in a homogeneous-goods market over 9 rounds.
+    Three sellers compete in a homogeneous-goods market over 10 rounds.
   parameters:
-    num_rounds: 9
+    num_rounds: 10
 
 topology:
   agents: ["seller_1", "seller_2", "seller_3"]
@@ -35,12 +35,12 @@ topology:
     cyclic: true
     stop_conditions:
       - type: "max_rounds"
-        value: 9
+        value: 10
 
 environment:
   name: "homogeneous_goods_market"
   type: "competitive"
-  max_rounds: 9
+  max_rounds: 10
   num_agents: 3
   parameters:
     marginal_cost: 10

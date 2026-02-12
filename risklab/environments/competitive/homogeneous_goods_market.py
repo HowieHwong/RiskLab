@@ -7,7 +7,7 @@ product.  The lowest-price seller wins all customers; ties split equally.
 This environment directly implements the R2 experiment from the paper:
     - Marginal cost c = 10
     - 99 customers per round
-    - 9 rounds of repeated interaction
+    - 10 rounds of repeated interaction
     - Public cheap-talk: sellers can broadcast messages each round
 """
 
