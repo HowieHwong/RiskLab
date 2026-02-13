@@ -48,3 +48,6 @@ llm_config.yaml
 context/experiment_drafts/
 context/original_paper.md
 .claude/
+
+# Archive
+archive/

@@ -223,6 +223,11 @@ def _ensure_environments_registered() -> None:
     )
     register_environment("grid_exploration", GridExplorationEnvironment)
 
+    from risklab.environments.cooperative.cultural_negotiation import (
+        CulturalNegotiationEnvironment,
+    )
+    register_environment("cultural_negotiation", CulturalNegotiationEnvironment)
+
     from risklab.environments.collective.trading_pipeline import (
         TradingPipelineEnvironment,
     )
@@ -357,6 +362,10 @@ def build_risks_from_config(
         pass
     try:
         import risklab.risks.strategic_misreporting  # noqa: F401
+    except ImportError:
+        pass
+    try:
+        import risklab.risks.normative_deadlock  # noqa: F401
     except ImportError:
         pass
 
