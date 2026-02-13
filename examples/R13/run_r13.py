@@ -10,9 +10,17 @@ Four experimental conditions:
 
 Usage
 -----
-    python -m risklab.experiments.run_r13
-    python -m risklab.experiments.run_r13 --seeds 3 --output results/r13
-    python -m risklab.experiments.run_r13 --conditions E3-1 E3-3
+    # Navigate to the examples/R13 directory first
+    cd examples/R13
+
+    # Run all conditions:
+    python run_r13.py
+
+    # Run specific conditions:
+    python run_r13.py --conditions E3-1 E3-3
+
+    # Customize seeds and output directory:
+    python run_r13.py --seeds 3 --output results/
 """
 
 from __future__ import annotations
@@ -73,7 +81,7 @@ _CONDITIONS: Dict[str, Dict[str, Any]] = {
 
 def _run_r13(
     num_seeds: int = 3,
-    output_dir: str = "results/r13",
+    output_dir: str = "results/",
     conditions: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """Run R13 experiments across selected conditions."""
@@ -272,8 +280,8 @@ def main() -> None:
     parser.add_argument(
         "--output", "-o",
         type=str,
-        default="results/r13",
-        help="Output directory (default: results/r13).",
+        default="results/",
+        help="Output directory (default: results/).",
     )
     parser.add_argument(
         "--conditions", "-c",

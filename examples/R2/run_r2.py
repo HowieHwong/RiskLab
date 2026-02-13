@@ -4,14 +4,17 @@ Run R2 (Tacit Collusion) experiments using the RiskLab framework.
 
 Usage
 -----
+    # Navigate to the examples/R2 directory first
+    cd examples/R2
+    
     # Run a single condition (E1 / E2 / E3):
-    python -m risklab.experiments.run_r2 --condition E1
+    python run_r2.py --condition E1
 
     # Run all three conditions:
-    python -m risklab.experiments.run_r2 --all
+    python run_r2.py --all
 
     # Customize seeds and output directory:
-    python -m risklab.experiments.run_r2 --all --seeds 3 --output results/r2
+    python run_r2.py --all --seeds 3 --output results/
 """
 
 from __future__ import annotations
@@ -53,7 +56,7 @@ _CONFIG_DIR = os.path.join(os.path.dirname(__file__), "configs")
 def _run_condition(
     condition: str,
     num_seeds: int = 2,
-    output_dir: str = "results/r2",
+    output_dir: str = "results/",
 ) -> List[Dict[str, Any]]:
     """Run a single condition and return results."""
     config_file = _CONDITIONS[condition]
@@ -177,8 +180,8 @@ def main() -> None:
     parser.add_argument(
         "--output", "-o",
         type=str,
-        default="results/r2",
-        help="Output directory for results (default: results/r2).",
+        default="results/",
+        help="Output directory for results (default: results/).",
     )
     args = parser.parse_args()
 
