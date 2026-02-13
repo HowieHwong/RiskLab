@@ -218,6 +218,11 @@ def _ensure_environments_registered() -> None:
     )
     register_environment("ad_pipeline", AdPipelineEnvironment)
 
+    from risklab.environments.collective.trading_pipeline import (
+        TradingPipelineEnvironment,
+    )
+    register_environment("trading_pipeline", TradingPipelineEnvironment)
+
 
 def build_environment_from_config(
     env_config: Dict[str, Any],
@@ -339,6 +344,10 @@ def build_risks_from_config(
         pass
     try:
         import risklab.risks.semantic_drift  # noqa: F401
+    except ImportError:
+        pass
+    try:
+        import risklab.risks.rigidity  # noqa: F401
     except ImportError:
         pass
 
