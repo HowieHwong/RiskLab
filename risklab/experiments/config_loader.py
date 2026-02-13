@@ -218,6 +218,11 @@ def _ensure_environments_registered() -> None:
     )
     register_environment("ad_pipeline", AdPipelineEnvironment)
 
+    from risklab.environments.cooperative.grid_exploration import (
+        GridExplorationEnvironment,
+    )
+    register_environment("grid_exploration", GridExplorationEnvironment)
+
     from risklab.environments.collective.trading_pipeline import (
         TradingPipelineEnvironment,
     )
@@ -348,6 +353,10 @@ def build_risks_from_config(
         pass
     try:
         import risklab.risks.rigidity  # noqa: F401
+    except ImportError:
+        pass
+    try:
+        import risklab.risks.strategic_misreporting  # noqa: F401
     except ImportError:
         pass
 

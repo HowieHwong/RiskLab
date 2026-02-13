@@ -8,3 +8,13 @@ These environments trigger risks such as:
     - Risk 9: Strategic Misreporting
     - Risk 10: Normative Deadlock Across Agents
 """
+
+from risklab.environments.cooperative.base import CooperativeEnvironment
+from risklab.environments.cooperative.ad_pipeline import AdPipelineEnvironment
+from risklab.environments.cooperative.grid_exploration import GridExplorationEnvironment
+
+__all__ = [
+    "CooperativeEnvironment",
+    "AdPipelineEnvironment",
+    "GridExplorationEnvironment",
+]
