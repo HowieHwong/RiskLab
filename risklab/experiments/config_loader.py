@@ -213,6 +213,11 @@ def _ensure_environments_registered() -> None:
     )
     register_environment("homogeneous_goods_market", HomogeneousGoodsMarket)
 
+    from risklab.environments.cooperative.ad_pipeline import (
+        AdPipelineEnvironment,
+    )
+    register_environment("ad_pipeline", AdPipelineEnvironment)
+
 
 def build_environment_from_config(
     env_config: Dict[str, Any],
@@ -327,9 +332,13 @@ def build_risks_from_config(
     -------
     list[Risk]
     """
-    # Ensure tacit_collusion is importable (triggers @register decorator)
+    # Ensure risk modules are importable (triggers @register decorators)
     try:
         import risklab.risks.tacit_collusion  # noqa: F401
+    except ImportError:
+        pass
+    try:
+        import risklab.risks.semantic_drift  # noqa: F401
     except ImportError:
         pass
 
@@ -340,11 +349,18 @@ def build_risks_from_config(
 
         risk_cls = RiskRegistry.get(name)
 
+        # Determine category from config or default to COMPETITIVE
+        category_str = rc.get("category", "competitive")
+        try:
+            category = RiskCategory(category_str)
+        except ValueError:
+            category = RiskCategory.COMPETITIVE
+
         # Build RiskConfig if the class accepts it
         risk_config = RiskConfig(
             risk_id=f"risk_{name}",
             name=name,
-            category=RiskCategory.COMPETITIVE,
+            category=category,
             lifecycle_stages=[LifecycleStage.DELIBERATION],
             parameters=params,
         )
@@ -391,6 +407,9 @@ def build_task_from_config(
         success_criteria=task_config.get("success_criteria", {}),
         constraints=task_config.get("constraints", {}),
         parameters=task_config.get("parameters", {}),
+        inputs=task_config.get("inputs"),
+        input_file=task_config.get("input_file"),
+        input_key=task_config.get("input_key"),
     )
 
 
