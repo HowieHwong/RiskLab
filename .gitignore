@@ -43,3 +43,11 @@ logs/
 
 # LLM config (contains API keys — do NOT commit!)
 llm_config.yaml
+
+# context
+context/experiment_drafts/
+context/original_paper.md
+.claude/
+
+# Archive
+archive/
