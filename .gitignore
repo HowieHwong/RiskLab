@@ -47,3 +47,4 @@ llm_config.yaml
 # context
 context/experiment_drafts/
 context/original_paper.md
+.claude/
