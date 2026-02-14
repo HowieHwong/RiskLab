@@ -15,7 +15,7 @@ experiment, and writes results to ``results/``.
    cd examples/R2
    python run_r2.py
 
-   # Rigidity & commitment (R13)
+   # Excessive Rigidity to Initial Directives (R13)
    cd examples/R13
    python run_r13.py
 

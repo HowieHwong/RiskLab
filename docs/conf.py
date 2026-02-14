@@ -55,3 +55,9 @@ html_theme_options = {
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }
+
+# -- Custom stylesheet ---------------------------------------------------
+
+def setup(app):
+    app.add_css_file("custom.css")
+    app.add_js_file("scrollspy.js")

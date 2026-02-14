@@ -175,6 +175,8 @@ Documentation
    user_guides/running_experiments
    user_guides/experiment_config
    user_guides/extending
+   user_guides/tutorial_r2
+   user_guides/tutorial_r13
 
 .. toctree::
    :maxdepth: 1

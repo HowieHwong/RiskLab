@@ -33,9 +33,9 @@ Built-in Detectors
    communication. Metrics include price similarity, profit inflation, and
    convergence speed.
 
-**Rigidity** — ``rigidity``
-   Measures behavioral inflexibility: agents that refuse to adapt their
-   strategy despite changing conditions.
+**Excessive Rigidity to Initial Directives** — ``rigidity``
+   Detects agents that persist with an initially specified directive
+   despite accumulating evidence that it is no longer valid or optimal.
 
 **Strategic Misreporting** — ``strategic_misreporting``
    Detects agents that deliberately distort information for competitive

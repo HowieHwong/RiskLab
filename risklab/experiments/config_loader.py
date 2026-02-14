@@ -213,10 +213,10 @@ def _ensure_environments_registered() -> None:
     )
     register_environment("homogeneous_goods_market", HomogeneousGoodsMarket)
 
-    from risklab.environments.cooperative.ad_pipeline import (
-        AdPipelineEnvironment,
-    )
-    register_environment("ad_pipeline", AdPipelineEnvironment)
+    # from risklab.environments.cooperative.ad_pipeline import (
+    #     AdPipelineEnvironment,
+    # )
+    # register_environment("ad_pipeline", AdPipelineEnvironment)
 
     from risklab.environments.cooperative.grid_exploration import (
         GridExplorationEnvironment,
