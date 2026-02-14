@@ -51,3 +51,9 @@ context/original_paper.md
 
 # Archive
 archive/
+
+# Sphinx documentation
+docs/_build/
+docs/.doctrees/
+docs/_static/
+site/
