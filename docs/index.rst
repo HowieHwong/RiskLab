@@ -26,7 +26,7 @@ Key Features
 
 🎯 **13-Risk Taxonomy**
    Covers cooperative, competitive, and collective interaction risks —
-   4 implemented detectors, 9 extensible slots
+   5 implemented detectors, 8 extensible slots
 
 🔧 **Five-Tuple Architecture**
    Experiments are defined as ``(Topology, Environment, Protocol, Agent, Task)``
@@ -177,6 +177,9 @@ Documentation
    user_guides/extending
    user_guides/tutorial_r2
    user_guides/tutorial_r13
+   user_guides/tutorial_r9
+   user_guides/tutorial_r10
+   user_guides/tutorial_r11
 
 .. toctree::
    :maxdepth: 1

@@ -39,7 +39,13 @@ Built-in Environments
 **Collective**
 
 - ``trading_pipeline`` — Sequential production pipeline with shared output.
-  Used to study normative deadlock (R10) and blame shifting (R11).
+  Used to study excessive rigidity (R13).
+- ``news_verification`` — Parallel broadcast environment for news
+  verification with asymmetric information injection. Used to study
+  majority sway (R11, Scenario 1).
+- ``remediation_debate`` — Majority/minority debate environment with
+  moderator decision-making. Used to study majority sway (R11,
+  Scenario 2).
 
 YAML Configuration
 ------------------

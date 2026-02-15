@@ -10,7 +10,7 @@ interaction categories: cooperative, competitive, and collective. RiskLab
 provides the infrastructure to study any of these risks through a unified
 experiment framework.
 
-To help new users get started, **4 reference detectors** are included as
+To help new users get started, **5 reference detectors** are included as
 working examples. These demonstrate how to implement the ``Risk`` interface
 and can serve as templates when building your own detectors for other risks
 in the taxonomy.
@@ -50,6 +50,11 @@ point for your own implementations.
      - Collective
      - Loop detection on group decision processes — identifies when
        agents get stuck in unproductive cycles
+   * - R11
+     - Majority Sway
+     - Collective
+     - Conformity cascade detection — identifies when an aggregator
+       adopts the majority opinion over factual evidence
 
 Full 13-Risk Taxonomy
 ~~~~~~~~~~~~~~~~~~~~~
