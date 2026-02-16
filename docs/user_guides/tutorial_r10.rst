@@ -39,11 +39,11 @@ planning negotiation for up to 10 rounds:
    * - ID
      - Condition
      - Summary Agent Behaviour
-   * - E1
+   * - C1
      - Control
      - Neutral rapporteur: objectively reports conflicts and scores
        convergence; offers *no* mediation advice
-   * - E2
+   * - C2
      - Treatment
      - Active mediator: applies a "Golden Bridge" strategy to craft
        face-saving compromise proposals for each party
@@ -199,7 +199,7 @@ slot — creating the scarcity that drives normative conflicts.
        objective: "system"       # neutral
 
 The summary agent's system prompt is swapped at runtime based on the
-experiment condition (E1 or E2) via the ``summary_agent_prompts``
+experiment condition (C1 or C2) via the ``summary_agent_prompts``
 section of the config.
 
 **Risk detector** — ``NormativeDeadlockRisk``:
@@ -220,20 +220,19 @@ Step 3 — Run the Experiment
 
    cd examples/R10
 
-   # Run E1 (no mediation) with 2 seeds
-   python run_r10.py --condition e1 --seeds 2
+   # Run C1 (no mediation)
+   python run_r10.py --condition e1
 
-   # Run E2 (with mediation) with 2 seeds
-   python run_r10.py --condition e2 --seeds 2
-
-   # Run both conditions
-   python run_r10.py --condition e1 --seeds 3
-   python run_r10.py --condition e2 --seeds 3
+   # Run C2 (with mediation)
+   python run_r10.py --condition e2
 
 .. note::
 
-   Comparing E1 and E2 results reveals whether strategic mediation can
-   break normative deadlock.  E1 typically ends in deadlock; E2 may
+   The CLI flag uses the code-level names ``e1`` / ``e2``, which map to
+   conditions **C1** / **C2** respectively.
+
+   Comparing C1 and C2 results reveals whether strategic mediation can
+   break normative deadlock.  C1 typically ends in deadlock; C2 may
    show higher convergence scores.
 
 
@@ -243,7 +242,7 @@ Step 4 — Understand the Execution Flow
 Here is what happens inside ``ExperimentRunner.run()``:
 
 1. **Reset** — Environment loads the initial context (festival brief);
-   the summary agent's prompt is set to E1 (rapporteur) or E2
+   the summary agent's prompt is set to C1 (rapporteur) or C2
    (mediator) based on the condition.
 
 2. **Round loop** — For each of the 10 rounds:
@@ -254,8 +253,8 @@ Here is what happens inside ``ExperimentRunner.run()``:
    b. **Stage 1 (aggregation)** — The summary agent reads all three
       proposals and produces a structured analysis:
 
-      - **E1**: conflict identification + convergence score only
-      - **E2**: conflict identification + convergence score +
+      - **C1**: conflict identification + convergence score only
+      - **C2**: conflict identification + convergence score +
         "Golden Bridge" compromise recommendations for each agent
 
    c. Summary agent's output is broadcast back to all cultural agents
@@ -281,13 +280,9 @@ Step 5 — Interpret the Results
 
 After a run you will see output like::
 
-   Seed   MaxScore   Final    Rounds   Outcome            Converged
-   ------------------------------------------------------------
-   0      2.0        2.0      10       deadlock           No
-   1      2.5        2.5      10       deadlock           No
-
-   Convergence rate: 0/2 (0%)
-   Average max score: 2.25/10
+   MaxScore   Final    Rounds   Outcome            Converged
+   -----------------------------------------------------------
+   2.0        2.0      10       deadlock           No
 
 **Output files:**
 
@@ -314,7 +309,7 @@ The **aggregate file** contains:
            2.0 after 10 rounds."
        }
      },
-     "convergence_trajectory": [0.0, 2.0, 2.0, 2.0, 0.0, ...],
+     "convergence_trajectory": [0.0, 2.0, 2.0, 2.0, 0.0, 2.0, 2.0, 2.0, 2.0, 2.0],
      "outcome": "deadlock"
    }
 
@@ -329,12 +324,12 @@ Key fields:
 Step 6 — Customize and Extend
 --------------------------------
 
-**Compare E1 vs E2** — the core research question:
+**Compare C1 vs C2** — the core research question:
 
 .. code-block:: bash
 
-   python run_r10.py --condition e1 --seeds 5
-   python run_r10.py --condition e2 --seeds 5
+   python run_r10.py --condition e1
+   python run_r10.py --condition e2
    # Compare convergence rates and max scores
 
 **Modify cultural norms** — edit agent system prompts:
@@ -413,7 +408,6 @@ Troubleshooting
    * - E2 still deadlocks
      - The mediator prompt may need tuning; try stronger compromise
        language or a more capable model
-
 
 What's Next?
 ------------

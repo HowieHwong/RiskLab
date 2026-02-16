@@ -175,11 +175,16 @@ Documentation
    user_guides/running_experiments
    user_guides/experiment_config
    user_guides/extending
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
    user_guides/tutorial_r2
-   user_guides/tutorial_r13
    user_guides/tutorial_r9
    user_guides/tutorial_r10
    user_guides/tutorial_r11
+   user_guides/tutorial_r13
 
 .. toctree::
    :maxdepth: 1
