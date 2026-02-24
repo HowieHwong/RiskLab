@@ -50,11 +50,6 @@ point for your own implementations.
      - Collective
      - Loop detection on group decision processes — identifies when
        agents get stuck in unproductive cycles
-   * - R11
-     - Majority Sway
-     - Collective
-     - Conformity cascade detection — identifies when an aggregator
-       adopts the majority opinion over factual evidence
 
 Full 13-Risk Taxonomy
 ~~~~~~~~~~~~~~~~~~~~~

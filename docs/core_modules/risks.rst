@@ -45,11 +45,6 @@ Built-in Detectors
    Identifies situations where agents become stuck in unproductive loops
    due to conflicting norms.
 
-**Majority Sway** — ``majority_sway``
-   Detects when an aggregator agent adopts the majority opinion even
-   when factual evidence supports the minority position, resulting in
-   conformity cascades and incorrect decisions.
-
 YAML Configuration
 ~~~~~~~~~~~~~~~~~~
 

@@ -506,13 +506,13 @@ class InformationFlowConfig:
         ...     cyclic=True,  # entry == exit, loops
         ... )
 
-    Risk 6 (Semantic Drift) — acyclic sequential pipeline::
+    Risk 13 (Excessive Rigidity) — sequential trading pipeline::
 
         >>> flow = InformationFlowConfig(
-        ...     entry_nodes=["user"],
-        ...     exit_nodes=["pm"],
-        ...     flow_order=["user", "rd_designer", "ad_designer", "pm"],
-        ...     cyclic=False,  # one-shot, no loop
+        ...     entry_nodes=["analyst"],
+        ...     exit_nodes=["analyst"],
+        ...     flow_order=["analyst", "strategy_planner", "trade_execution"],
+        ...     cyclic=True,
         ... )
     """
 

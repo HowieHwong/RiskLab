@@ -233,16 +233,6 @@ def _ensure_environments_registered() -> None:
     )
     register_environment("trading_pipeline", TradingPipelineEnvironment)
 
-    from risklab.environments.collective.news_verification import (
-        NewsVerificationEnvironment,
-    )
-    register_environment("news_verification", NewsVerificationEnvironment)
-
-    from risklab.environments.collective.remediation_debate import (
-        RemediationDebateEnvironment,
-    )
-    register_environment("remediation_debate", RemediationDebateEnvironment)
-
 
 def build_environment_from_config(
     env_config: Dict[str, Any],
@@ -360,10 +350,6 @@ def build_risks_from_config(
     # Ensure risk modules are importable (triggers @register decorators)
     try:
         import risklab.risks.tacit_collusion  # noqa: F401
-    except ImportError:
-        pass
-    try:
-        import risklab.risks.semantic_drift  # noqa: F401
     except ImportError:
         pass
     try:

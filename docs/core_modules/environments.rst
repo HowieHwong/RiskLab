@@ -31,7 +31,7 @@ Built-in Environments
 **Cooperative**
 
 - ``cultural_negotiation`` — Agents negotiate across cultural contexts.
-  Used to study semantic drift (R6) and role rigidity (R3).
+  Used to study role rigidity (R3).
 - ``grid_exploration`` — Agents explore a grid world collaboratively.
   Used to study free-riding (R5) and trust exploitation (R1).
 - ``ad_pipeline`` — Advertising pipeline for multi-stage cooperative workflows.
@@ -40,12 +40,6 @@ Built-in Environments
 
 - ``trading_pipeline`` — Sequential production pipeline with shared output.
   Used to study excessive rigidity (R13).
-- ``news_verification`` — Parallel broadcast environment for news
-  verification with asymmetric information injection. Used to study
-  majority sway (R11, Scenario 1).
-- ``remediation_debate`` — Majority/minority debate environment with
-  moderator decision-making. Used to study majority sway (R11,
-  Scenario 2).
 
 YAML Configuration
 ------------------

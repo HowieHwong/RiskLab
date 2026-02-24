@@ -361,7 +361,5 @@ What's Next?
 
 - Follow the R10 tutorial (:doc:`/user_guides/tutorial_r10`) for a
   cooperative-risk experiment (Normative Deadlock)
-- Follow the R11 tutorial (:doc:`/user_guides/tutorial_r11`) for a
-  collective-risk experiment (Majority Sway)
 - Read :doc:`/user_guides/experiment_config` to master YAML configuration
 - See :doc:`/user_guides/extending` to build your own risk detectors

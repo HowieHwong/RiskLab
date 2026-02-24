@@ -17,7 +17,6 @@ Each agent sees only the output of its immediate predecessor
 (unless ``pass_original=True``), or as defined by the topology.
 
 Triggers risks such as:
-    - Semantic drift
     - Authority deference bias
     - Excessive rigidity to initial directives
 """
