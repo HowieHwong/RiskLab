@@ -97,8 +97,9 @@ Environment
        price_range: [10, 100]
        num_customers: 99
 
-Available names: ``homogeneous_goods_market``, ``ad_pipeline``,
-``grid_exploration``, ``cultural_negotiation``, ``trading_pipeline``.
+Available names (registered in the default config loader):
+``homogeneous_goods_market``, ``grid_exploration``,
+``cultural_negotiation``, ``trading_pipeline``.
 
 Protocol
 --------

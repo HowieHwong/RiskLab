@@ -16,7 +16,7 @@ Ensure ``llm_config.yaml`` exists at the project root with valid API keys
 .. code-block:: bash
 
    cd examples/R2
-   python run_r2.py
+   python run_r2.py --condition C1
 
 This loads ``configs/r2_C1_basic.yaml``, builds all components, and
 executes the interaction loop. Results are saved to ``results/``.

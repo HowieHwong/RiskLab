@@ -34,7 +34,6 @@ Built-in Environments
   Used to study role rigidity (R3).
 - ``grid_exploration`` — Agents explore a grid world collaboratively.
   Used to study free-riding (R5) and trust exploitation (R1).
-- ``ad_pipeline`` — Advertising pipeline for multi-stage cooperative workflows.
 
 **Collective**
 
@@ -60,3 +59,5 @@ YAML Configuration
 
    ``name`` is the registry lookup key. ``parameters`` (not ``params``)
    holds environment-specific key-value pairs.
+   Some repository configs are provided as reference templates and may use
+   environment names that are not registered by default.

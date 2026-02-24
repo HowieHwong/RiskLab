@@ -10,7 +10,7 @@ interaction categories: cooperative, competitive, and collective. RiskLab
 provides the infrastructure to study any of these risks through a unified
 experiment framework.
 
-To help new users get started, **5 reference detectors** are included as
+To help new users get started, **4 reference detectors** are included as
 working examples. These demonstrate how to implement the ``Risk`` interface
 and can serve as templates when building your own detectors for other risks
 in the taxonomy.
@@ -35,14 +35,9 @@ point for your own implementations.
      - Competitive
      - Price convergence detection via similarity metrics and
        counterfactual analysis
-   * - R3 / R13
-     - Role Rigidity
-     - Cooperative
-     - Behavioral inflexibility measurement — tracks how much an
-       agent's strategy changes (or fails to change) over rounds
    * - R9
      - Strategic Misreporting
-     - Competitive
+     - Cooperative
      - Information distortion detection — compares reported values
        against ground truth
    * - R10
@@ -50,6 +45,11 @@ point for your own implementations.
      - Collective
      - Loop detection on group decision processes — identifies when
        agents get stuck in unproductive cycles
+   * - R13
+     - Excessive Rigidity to Initial Directives
+     - Collective
+     - Behavioral inflexibility measurement — tracks how much an
+       agent's strategy changes (or fails to change) over rounds
 
 Full 13-Risk Taxonomy
 ~~~~~~~~~~~~~~~~~~~~~
@@ -66,56 +66,59 @@ detectors can be implemented by subclassing ``Risk`` and registering via
      - Risk
      - Category
    * - R1
-     - Trust Exploitation
-     - Cooperative
+     - Competitive Resource Overreach
+     - Competitive
    * - R2
      - Tacit Collusion
      - Competitive
    * - R3
-     - Role Rigidity
-     - Cooperative
+     - Priority Monopolisation
+     - Competitive
    * - R4
-     - Resource Hoarding
+     - Centralized Prior Bias & Info Asymmetry
      - Competitive
    * - R5
-     - Free-Riding
-     - Cooperative
+     - Steganography
+     - Competitive
    * - R6
-     - Semantic Drift
+     - Semantic Drift in Sequential Handoffs
      - Cooperative
    * - R7
-     - Echo Chamber
-     - Collective
+     - Redundant Effort & Role Drift
+     - Cooperative
    * - R8
-     - Groupthink
-     - Collective
+     - Unchecked Assumptions
+     - Cooperative
    * - R9
      - Strategic Misreporting
-     - Competitive
+     - Cooperative
    * - R10
-     - Normative Deadlock
+     - Normative Deadlock Across Agents
      - Collective
    * - R11
-     - Blame Shifting
-     - Cooperative
+     - Majority Sway & Conformity Cascades
+     - Collective
    * - R12
-     - Gatekeeping
-     - Competitive
+     - Authority Deference Bias
+     - Collective
    * - R13
-     - Commitment & Rigidity
-     - Mixed
+     - Excessive Rigidity to Initial Directives
+     - Collective
 
 Interaction Categories
 ~~~~~~~~~~~~~~~~~~~~~~
 
 **Cooperative** — Agents work toward shared goals. Risks arise from
-coordination failures, cultural friction, or information distortion.
+semantic drift, redundant effort, unchecked assumptions, or strategic
+misreporting.
 
 **Competitive** — Agents pursue individual advantage. Risks include
-collusion, exploitation of information asymmetry, and strategic deception.
+resource overreach, collusion, priority monopolisation, information
+asymmetry, and steganography.
 
 **Collective** — Agents participate in group-level processes. Risks emerge
-from normative deadlock, groupthink, and echo chambers.
+from normative deadlock, conformity cascades, authority deference bias,
+and excessive rigidity.
 
 Key Abstractions
 ----------------

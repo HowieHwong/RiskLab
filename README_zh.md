@@ -668,9 +668,9 @@ print(task.to_prompt_section())
 ```python
 # 方式 A — 内联输入
 task = TaskConfig(
-    task_id="ad_pipeline_relay",
+    task_id="report_pipeline",
     task_type=TaskType.PIPELINE_PRODUCTION,
-    description="将产品报告转化为广告文案。",
+    description="将产品报告转化为摘要。",
     inputs=[
         {"text": "产品 A 是一款下一代 AI 芯片…", "id": "report_1"},
         {"text": "产品 B 是一款量子传感器…",     "id": "report_2"},
@@ -711,9 +711,9 @@ task:
 
 ```yaml
 task:
-  task_id: "ad_pipeline_relay"
+  task_id: "report_pipeline"
   task_type: "pipeline_production"
-  description: "将产品报告转化为广告文案。"
+  description: "将产品报告转化为摘要。"
   inputs:
     - id: "report_1"
       text: "产品 A 是一款下一代 AI 芯片…"
@@ -851,11 +851,9 @@ agents:
     objective: "selfish"
 
 risks:
-  - type: "tacit_collusion"
+  - name: "tacit_collusion"
     parameters:
-      competitive_price_threshold: 15
-
-seeds: 5
+      high_price_threshold: 15
 ```
 
 ### 8. 任务评估
@@ -913,13 +911,16 @@ inspect_config(my_config_dict)
 
 ### 10. 示例实验配置
 
-工具包内置了四个示例配置：
+工具包内置了三个**参考**示例配置：
 
 | 配置文件 | 风险 | 拓扑模式 |
 |---------|------|---------|
 | `example_tacit_collusion.yaml` | 风险 2：默契合谋 | 全连通卖家网络 |
 | `example_resource_overreach.yaml` | 风险 1：资源过度索取 | 扇出/扇入：user → [5 agents] → summary → user |
 | `example_multi_flow.yaml` | 风险 7：冗余工作 | 多信息流：两条路径在 analyst 汇合 |
+
+如需完整复现实验，请使用 ``examples/`` 中已实现的四个风险案例：
+R2、R9、R10、R13。
 
 ---
 

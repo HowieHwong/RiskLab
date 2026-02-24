@@ -46,13 +46,13 @@ Examples
 .. code-block:: bash
 
    # Full preview
-   python -m risklab.inspect_config configs/r2_C1_basic.yaml -A
+   python -m risklab.inspect_config risklab/experiments/configs/r2_C1_basic.yaml -A
 
    # Topology and flow only
-   python -m risklab.inspect_config configs/r2_C1_basic.yaml -t -f
+   python -m risklab.inspect_config risklab/experiments/configs/r2_C1_basic.yaml -t -f
 
    # Agent setup
-   python -m risklab.inspect_config configs/r2_C1_basic.yaml -a
+   python -m risklab.inspect_config risklab/experiments/configs/r2_C1_basic.yaml -a
 
 Sample Output
 ~~~~~~~~~~~~~
