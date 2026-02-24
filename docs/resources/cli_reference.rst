@@ -46,13 +46,13 @@ Examples
 .. code-block:: bash
 
    # Full preview
-   python -m risklab.inspect_config configs/r2_E1_basic.yaml -A
+   python -m risklab.inspect_config configs/r2_C1_basic.yaml -A
 
    # Topology and flow only
-   python -m risklab.inspect_config configs/r2_E1_basic.yaml -t -f
+   python -m risklab.inspect_config configs/r2_C1_basic.yaml -t -f
 
    # Agent setup
-   python -m risklab.inspect_config configs/r2_E1_basic.yaml -a
+   python -m risklab.inspect_config configs/r2_C1_basic.yaml -a
 
 Sample Output
 ~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ Sample Output
 .. code-block:: text
 
    === Experiment Summary ===
-   Name: R2_E1_basic
+   Name: R2_C1_basic
    Rounds: 10
    Seeds: [0, 1, 2]
 

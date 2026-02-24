@@ -68,7 +68,7 @@ Quick Example
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("configs/r2_E1_basic.yaml")
+   config = load_experiment_config("configs/r2_C1_basic.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(**components)
    results = runner.run()  # list[dict] — one per seed

@@ -114,7 +114,7 @@ class MarketSellerAgent(Agent):
         except Exception as e:
             # Fallback for API errors
             response_text = (
-                "[Price]\n15\n[Speech]\nMaintaining market position."
+                "[Price]\n10\n[Speech]\nAPI error fallback: pricing at marginal cost."
             )
             print(f"  ⚠ LLM error for {self.agent_id}: {e}")
 

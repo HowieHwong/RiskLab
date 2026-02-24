@@ -61,6 +61,12 @@ independent repetitions so you can measure variance.
 
    results = runner.run(num_seeds=5)   # 5 independent runs
 
+.. note::
+
+   In the current framework, ``seed`` is a run index recorded in outputs.
+   It is not guaranteed to map to a deterministic random seed in external
+   LLM provider APIs.
+
 Output Structure
 ----------------
 

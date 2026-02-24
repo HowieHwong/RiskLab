@@ -59,11 +59,11 @@ YAML Configuration
      - name: tacit_collusion
        parameters:
          marginal_cost: 10
-         high_price_threshold: 13
+         high_price_threshold: 15
 
      - name: rigidity
        parameters:
-         change_threshold: 0.1
+         detection_threshold: 0.25   # risk score threshold for detect()
 
 .. note::
 

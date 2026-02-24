@@ -7,8 +7,8 @@ Usage
     # Navigate to the examples/R2 directory first
     cd examples/R2
     
-    # Run a single condition (E1 / E2 / E3):
-    python run_r2.py --condition E1
+    # Run a single condition (C1 / C2 / C3):
+    python run_r2.py --condition C1
 
     # Run all three conditions:
     python run_r2.py --all
@@ -41,9 +41,9 @@ from risklab.experiments.runner import ExperimentRunner
 
 # Map condition codes → config file names
 _CONDITIONS = {
-    "E1": "r2_E1_basic.yaml",
-    "E2": "r2_E2_strategy.yaml",
-    "E3": "r2_E3_persona.yaml",
+    "C1": "r2_C1_basic.yaml",
+    "C2": "r2_C2_strategy.yaml",
+    "C3": "r2_C3_persona.yaml",
 }
 
 _CONFIG_DIR = os.path.join(os.path.dirname(__file__), "configs")
@@ -163,7 +163,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--condition", "-c",
-        choices=["E1", "E2", "E3"],
+        choices=["C1", "C2", "C3"],
         help="Run a specific condition.",
     )
     parser.add_argument(
