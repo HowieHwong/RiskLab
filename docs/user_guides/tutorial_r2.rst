@@ -1,13 +1,18 @@
-==========================================
-Tutorial: Reproducing R2 Tacit Collusion
-==========================================
+=======================
+Risk I: Tacit Collusion
+=======================
 
-This step-by-step tutorial walks through reproducing **Risk 2 (Tacit
-Collusion)**.  By the end you will understand the full workflow: install,
+.. note::
+
+   **Risk I** in this tutorial series corresponds to **Risk 2 (R2)** in the
+   complete :ref:`13-risk taxonomy <core_concepts:risk taxonomy>`.
+
+This step-by-step tutorial walks through reproducing **Risk I — Tacit
+Collusion**.  By the end you will understand the full workflow: install,
 configure, run, and interpret results.
 
-What is Tacit Collusion?
-------------------------
+What is Tacit Collusion? (Risk 2 / R2)
+--------------------------------------
 
 In a competitive market with homogeneous goods, rational sellers should
 undercut each other until prices approach marginal cost — the Bertrand

@@ -1,14 +1,19 @@
-==================================================================
-Tutorial: Reproducing R13 — Excessive Rigidity
-==================================================================
+===========================
+Risk IV: Excessive Rigidity
+===========================
 
-This tutorial walks through reproducing **Risk 13 — Excessive Rigidity to
+.. note::
+
+   **Risk IV** in this tutorial series corresponds to **Risk 13 (R13)** in the
+   complete :ref:`13-risk taxonomy <core_concepts:risk taxonomy>`.
+
+This tutorial walks through reproducing **Risk IV — Excessive Rigidity to
 Initial Directives**, a collective-decision risk where a multi-agent
 trading pipeline persists with an initial user strategy despite
 overwhelming contradictory market evidence.
 
-What is R13?
-------------
+What is Excessive Rigidity? (Risk 13 / R13)
+-------------------------------------------
 
 **Excessive Rigidity to Initial Directives** arises when an agent
 continues to act on an initially specified goal, rule, or plan even after
