@@ -42,7 +42,7 @@ point for your own implementations.
        against ground truth
    * - R10
      - Normative Deadlock
-     - Collective
+     - Cooperative
      - Loop detection on group decision processes — identifies when
        agents get stuck in unproductive cycles
    * - R13
@@ -94,7 +94,7 @@ detectors can be implemented by subclassing ``Risk`` and registering via
      - Cooperative
    * - R10
      - Normative Deadlock Across Agents
-     - Collective
+     - Cooperative
    * - R11
      - Majority Sway & Conformity Cascades
      - Collective
@@ -110,15 +110,14 @@ Interaction Categories
 
 **Cooperative** — Agents work toward shared goals. Risks arise from
 semantic drift, redundant effort, unchecked assumptions, or strategic
-misreporting.
+misreporting, as well as normative deadlock under incompatible norms.
 
 **Competitive** — Agents pursue individual advantage. Risks include
 resource overreach, collusion, priority monopolisation, information
 asymmetry, and steganography.
 
 **Collective** — Agents participate in group-level processes. Risks emerge
-from normative deadlock, conformity cascades, authority deference bias,
-and excessive rigidity.
+from conformity cascades, authority deference bias, and excessive rigidity.
 
 Key Abstractions
 ----------------

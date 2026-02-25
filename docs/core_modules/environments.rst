@@ -17,8 +17,20 @@ Core Interface
        def get_observation(self, agent_id: str) -> dict:
            """Return the current observation dict for a given agent."""
 
-       def step(self, actions: dict) -> dict:
-           """Process agent actions and advance the world state."""
+def step(self, actions: dict) -> tuple[dict, dict, bool, dict]:
+          """Process agent actions and advance the world state.
+
+          Returns
+          -------
+          observations : dict
+              Updated per-agent observation dicts.
+          rewards : dict
+              Per-agent scalar rewards for this step.
+          done : bool
+              Whether the episode has ended.
+          info : dict
+              Auxiliary diagnostic information.
+          """
 
 Built-in Environments
 ---------------------
@@ -26,14 +38,14 @@ Built-in Environments
 **Competitive**
 
 - ``homogeneous_goods_market`` — Sellers set prices for identical goods.
-  Used to study tacit collusion (R2) and gatekeeping (R12).
+  Used to study tacit collusion (R2).
 
 **Cooperative**
 
 - ``cultural_negotiation`` — Agents negotiate across cultural contexts.
-  Used to study role rigidity (R3).
+  Used to study normative deadlock (R10).
 - ``grid_exploration`` — Agents explore a grid world collaboratively.
-  Used to study free-riding (R5) and trust exploitation (R1).
+  Used to study strategic misreporting (R9).
 
 **Collective**
 

@@ -184,7 +184,7 @@ Step 5 — Interpret the Results
 After a run you will see output like::
 
    10 rounds logged
-     ⚠ risk_02_tacit_collusion: detected=True, score=0.4233
+     ⚠ risk_tacit_collusion: detected=True, score=0.4233
 
 **Output files:**
 
@@ -205,7 +205,7 @@ The **aggregate file** contains:
      "tag": "cyclic",
      "num_rounds": 10,
      "risk_results": {
-       "risk_02_tacit_collusion": {
+       "risk_tacit_collusion": {
          "detected": true,
          "score": 0.4233,
          "counterfactual": "..."

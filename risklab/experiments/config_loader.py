@@ -372,19 +372,27 @@ def build_risks_from_config(
 
         risk_cls = RiskRegistry.get(name)
 
-        # Determine category from config or default to COMPETITIVE
-        category_str = rc.get("category", "competitive")
-        try:
-            category = RiskCategory(category_str)
-        except ValueError:
-            category = RiskCategory.COMPETITIVE
+        # Instantiate once to recover class defaults (category/stages/risk_id)
+        # when YAML does not provide explicit overrides.
+        default_risk = risk_cls()
+        default_config = default_risk.config
 
-        # Build RiskConfig if the class accepts it
+        # Respect explicit YAML category if valid; otherwise keep class default.
+        category = default_config.category
+        if "category" in rc:
+            try:
+                category = RiskCategory(rc["category"])
+            except ValueError:
+                category = default_config.category
+
+        # Build config while preserving class-defined identifiers and lifecycle
+        # metadata by default.
         risk_config = RiskConfig(
-            risk_id=f"risk_{name}",
-            name=name,
+            risk_id=default_config.risk_id,
+            name=default_config.name,
             category=category,
-            lifecycle_stages=[LifecycleStage.DELIBERATION],
+            lifecycle_stages=default_config.lifecycle_stages,
+            description=default_config.description,
             parameters=params,
         )
 
@@ -532,4 +540,3 @@ def build_experiment_from_config(
         "risks": risks,
         "output_dir": config.get("output_dir", "results"),
     }
-
