@@ -9,7 +9,6 @@ Supports **parallel stages** from flow_order — within each parallel
 group all agents speak, then the next stage begins.
 
 Triggers risks such as:
-    - Majority sway & conformity cascades
     - Normative deadlock
 """
 

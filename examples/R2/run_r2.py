@@ -7,8 +7,8 @@ Usage
     # Navigate to the examples/R2 directory first
     cd examples/R2
     
-    # Run a single condition (E1 / E2 / E3):
-    python run_r2.py --condition E1
+    # Run a single condition (C1 / C2 / C3):
+    python run_r2.py --condition C1
 
     # Run all three conditions:
     python run_r2.py --all
@@ -39,11 +39,54 @@ from risklab.experiments.config_loader import (
 from risklab.experiments.runner import ExperimentRunner
 
 
+# ------------------------------------------------------------------
+# Verbose round printer
+# ------------------------------------------------------------------
+
+def _make_round_printer(total_rounds: int):
+    """Return a callback that pretty-prints each round to the terminal."""
+
+    def _print_round(info: Dict[str, Any]) -> None:
+        rnd = info.get("round", 0) + 1          # 0-indexed → 1-indexed
+        prices = info.get("prices", {})
+        speeches = info.get("speeches", {})
+        winners = info.get("winners", [])
+        market_price = info.get("market_price", 0)
+        customers = info.get("customers_per_winner", 0)
+        profits = info.get("round_profits", {})
+        cum_profits = info.get("cumulative_profits", {})
+
+        W = 68
+        print(f"\n{'═' * W}")
+        header = f"Round {rnd} / {total_rounds}"
+        print(f"{'':>2}{header:^{W - 4}}")
+        print(f"{'─' * W}")
+
+        for aid in sorted(prices.keys()):
+            p = prices[aid]
+            s = speeches.get(aid, "")
+            if len(s) > 38:
+                s = s[:35] + "..."
+            tag = ">>" if aid in winners else "  "
+            print(f"  {tag} {aid:<12}  Price: {p:<5} \"{s}\"")
+
+        print(f"{'─' * W}")
+        winner_str = ", ".join(winners)
+        print(f"  Market Price: {market_price}  |  Winner: {winner_str}  |  {customers} customers each")
+        prof_parts = [f"{aid}: {profits.get(aid, 0):.0f}" for aid in sorted(prices.keys())]
+        print(f"  Round Profit   {' | '.join(prof_parts)}")
+        cum_parts = [f"{aid}: {cum_profits.get(aid, 0):.0f}" for aid in sorted(prices.keys())]
+        print(f"  Cumul. Profit  {' | '.join(cum_parts)}")
+        print(f"{'═' * W}")
+
+    return _print_round
+
+
 # Map condition codes → config file names
 _CONDITIONS = {
-    "E1": "r2_E1_basic.yaml",
-    "E2": "r2_E2_strategy.yaml",
-    "E3": "r2_E3_persona.yaml",
+    "C1": "r2_C1_basic.yaml",
+    "C2": "r2_C2_strategy.yaml",
+    "C3": "r2_C3_persona.yaml",
 }
 
 _CONFIG_DIR = os.path.join(os.path.dirname(__file__), "configs")
@@ -57,6 +100,7 @@ def _run_condition(
     condition: str,
     num_seeds: int = 2,
     output_dir: str = "results/",
+    verbose: bool = False,
 ) -> List[Dict[str, Any]]:
     """Run a single condition and return results."""
     config_file = _CONDITIONS[condition]
@@ -81,6 +125,13 @@ def _run_condition(
     # Override output directory
     components["output_dir"] = output_dir
 
+    # Verbose callback
+    round_callback = None
+    if verbose:
+        env = components["environment"]
+        total = getattr(env, "max_rounds", 10)
+        round_callback = _make_round_printer(total)
+
     # Construct runner
     runner = ExperimentRunner(
         experiment_id=components["experiment_id"],
@@ -92,6 +143,7 @@ def _run_condition(
         flow=components.get("flow"),
         risks=components.get("risks", []),
         output_dir=components["output_dir"],
+        on_round_callback=round_callback,
     )
 
     # Execute
@@ -163,7 +215,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--condition", "-c",
-        choices=["E1", "E2", "E3"],
+        choices=["C1", "C2", "C3"],
         help="Run a specific condition.",
     )
     parser.add_argument(
@@ -183,6 +235,11 @@ def main() -> None:
         default="results/",
         help="Output directory for results (default: results/).",
     )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Print each round's prices, speeches and results.",
+    )
     args = parser.parse_args()
 
     if not args.condition and not args.all:
@@ -195,7 +252,7 @@ def main() -> None:
     all_results: Dict[str, List[Dict]] = {}
     for cond in conditions:
         try:
-            results = _run_condition(cond, num_seeds=args.seeds, output_dir=args.output)
+            results = _run_condition(cond, num_seeds=args.seeds, output_dir=args.output, verbose=args.verbose)
             all_results[cond] = results
         except Exception as e:
             print(f"  ✗ Condition {cond} failed: {e}")

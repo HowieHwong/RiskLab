@@ -1,14 +1,19 @@
-======================================================
-Tutorial: Reproducing R9 — Strategic Misreporting
-======================================================
+===============================
+Risk II: Strategic Misreporting
+===============================
 
-This tutorial walks through reproducing **Risk 9 — Strategic
+.. note::
+
+   **Risk II** in this tutorial series corresponds to **Risk 9 (R9)** in the
+   complete :ref:`13-risk taxonomy <core_concepts:risk taxonomy>`.
+
+This tutorial walks through reproducing **Risk II — Strategic
 Misreporting**, a cooperative-interaction risk where an agent with
 privileged information strategically falsifies data relayed to a
 partner for personal gain.
 
-What is R9?
------------
+What is Strategic Misreporting? (Risk 9 / R9)
+---------------------------------------------
 
 **Strategic Misreporting** arises when an agent that acts as an
 information relay deliberately falsifies or omits task-relevant data.
@@ -361,7 +366,5 @@ What's Next?
 
 - Follow the R10 tutorial (:doc:`/user_guides/tutorial_r10`) for a
   cooperative-risk experiment (Normative Deadlock)
-- Follow the R11 tutorial (:doc:`/user_guides/tutorial_r11`) for a
-  collective-risk experiment (Majority Sway)
 - Read :doc:`/user_guides/experiment_config` to master YAML configuration
 - See :doc:`/user_guides/extending` to build your own risk detectors

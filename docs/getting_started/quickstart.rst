@@ -16,9 +16,9 @@ Ensure ``llm_config.yaml`` exists at the project root with valid API keys
 .. code-block:: bash
 
    cd examples/R2
-   python run_r2.py
+   python run_r2.py --condition C1
 
-This loads ``configs/r2_E1_basic.yaml``, builds all components, and
+This loads ``configs/r2_C1_basic.yaml``, builds all components, and
 executes the interaction loop. Results are saved to ``results/``.
 
 3. Check Results
@@ -29,7 +29,7 @@ executes the interaction loop. Results are saved to ``results/``.
 .. code-block:: json
 
    {
-     "experiment_id": "R2_E1_basic",
+     "experiment_id": "R2_C1_basic",
      "seed": 0,
      "num_rounds": 10,
      "risk_results": {

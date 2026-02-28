@@ -26,7 +26,7 @@ Key Features
 
 🎯 **13-Risk Taxonomy**
    Covers cooperative, competitive, and collective interaction risks —
-   5 implemented detectors, 8 extensible slots
+   4 implemented detectors, 9 extensible slots
 
 🔧 **Five-Tuple Architecture**
    Experiments are defined as ``(Topology, Environment, Protocol, Agent, Task)``
@@ -56,7 +56,7 @@ Quick Example
 .. code-block:: bash
 
    cd examples/R2
-   python run_r2.py
+   python run_r2.py --condition C1
 
 **As a library**:
 
@@ -68,7 +68,7 @@ Quick Example
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("configs/r2_E1_basic.yaml")
+   config = load_experiment_config("examples/R2/configs/r2_C1_basic.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(**components)
    results = runner.run()  # list[dict] — one per seed
@@ -183,7 +183,6 @@ Documentation
    user_guides/tutorial_r2
    user_guides/tutorial_r9
    user_guides/tutorial_r10
-   user_guides/tutorial_r11
    user_guides/tutorial_r13
 
 .. toctree::

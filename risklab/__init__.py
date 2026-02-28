@@ -37,7 +37,6 @@ from risklab.experiments.config_loader import (
     build_agents_from_config,
     load_experiment_config,
 )
-from risklab.inspect_config import inspect_config
 
 # MCP and Skills (optional dependencies)
 try:

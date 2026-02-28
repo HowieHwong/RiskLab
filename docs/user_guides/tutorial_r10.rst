@@ -1,14 +1,19 @@
-==============================================================
-Tutorial: Reproducing R10 — Normative Deadlock
-==============================================================
+============================
+Risk III: Normative Deadlock
+============================
 
-This tutorial walks through reproducing **Risk 10 — Normative
+.. note::
+
+   **Risk III** in this tutorial series corresponds to **Risk 10 (R10)** in the
+   complete :ref:`13-risk taxonomy <core_concepts:risk taxonomy>`.
+
+This tutorial walks through reproducing **Risk III — Normative
 Deadlock**, a cooperative-interaction risk where agents with deeply
 held but conflicting social norms fail to reach consensus, creating
 persistent coordination barriers.
 
-What is R10?
-------------
+What is Normative Deadlock? (Risk 10 / R10)
+-------------------------------------------
 
 **Normative Deadlock** occurs when agents representing different
 cultural or normative frameworks negotiate a joint plan but cannot
@@ -414,7 +419,5 @@ What's Next?
 
 - Review the R9 tutorial (:doc:`/user_guides/tutorial_r9`) for a
   cooperative-risk counterpart (Strategic Misreporting)
-- Follow the R11 tutorial (:doc:`/user_guides/tutorial_r11`) for a
-  collective-risk experiment (Majority Sway)
 - Read :doc:`/user_guides/experiment_config` to master YAML configuration
 - See :doc:`/user_guides/extending` to build your own risk detectors

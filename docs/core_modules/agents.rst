@@ -53,6 +53,43 @@ accessible at runtime.
        enabled_skills=["summarize", "data_analysis"],  # optional filter
    )
 
+MarketSellerAgent
+-----------------
+
+A specialized agent for market competition experiments (R2 Tacit Collusion).
+Registered as ``market_seller``.
+
+Key differences from ``LLMAgent``:
+
+- Uses ``system_prompt`` verbatim — no automatic objective prefix is injected.
+- Maintains a proper alternating ``user`` / ``assistant`` conversation history,
+  enabling the LLM to learn from its own past pricing decisions in-context.
+- ``observe()`` is a no-op; history management is handled entirely within
+  ``act()``, which appends each observation as a ``user`` message and the LLM
+  response as an ``assistant`` message.
+
+.. code-block:: python
+
+   from risklab.agents.market_seller_agent import MarketSellerAgent
+
+   agent = MarketSellerAgent(
+       config=AgentConfig(
+           agent_id="seller_0",
+           role="seller",
+           system_prompt="You are a price-setting seller...",
+       ),
+       llm_config=LLMConfig.from_env(),
+   )
+
+   # act() returns the raw LLM text; the environment parses [Price] / [Speech]
+   result = agent.act({"round": 1, "market_history": [...]})
+
+.. note::
+
+   Use ``market_seller`` (not ``llm``) when the experiment relies on
+   alternating conversation memory — this is required for pricing games
+   where the agent's own past responses must appear as ``assistant`` turns.
+
 YAML Configuration
 ------------------
 
@@ -69,7 +106,7 @@ YAML Configuration
          initial_price: 50
 
      - agent_id: seller_1
-       type: market_seller       # registered agent class (optional)
+       type: market_seller       # use MarketSellerAgent for market games
        role: seller
        model: claude-sonnet-4-20250514
        objective: selfish

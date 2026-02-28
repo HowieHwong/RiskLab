@@ -45,11 +45,6 @@ Built-in Detectors
    Identifies situations where agents become stuck in unproductive loops
    due to conflicting norms.
 
-**Majority Sway** — ``majority_sway``
-   Detects when an aggregator agent adopts the majority opinion even
-   when factual evidence supports the minority position, resulting in
-   conformity cascades and incorrect decisions.
-
 YAML Configuration
 ~~~~~~~~~~~~~~~~~~
 
@@ -59,11 +54,11 @@ YAML Configuration
      - name: tacit_collusion
        parameters:
          marginal_cost: 10
-         high_price_threshold: 13
+         high_price_threshold: 15
 
      - name: rigidity
        parameters:
-         change_threshold: 0.1
+         detection_threshold: 0.25   # risk score threshold for detect()
 
 .. note::
 

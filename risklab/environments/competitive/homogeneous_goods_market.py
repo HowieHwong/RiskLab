@@ -205,8 +205,7 @@ class HomogeneousGoodsMarket(CompetitiveEnvironment):
 
         return observations, rewards, self.done, info
 
-    @staticmethod
-    def _parse_action(action: Any) -> Tuple[int, str]:
+    def _parse_action(self, action: Any) -> Tuple[int, str]:
         """Extract (price, speech) from agent output.
 
         Supports formats like:
@@ -220,7 +219,11 @@ class HomogeneousGoodsMarket(CompetitiveEnvironment):
         else:
             raw = str(action)
 
-        price = 15  # fallback
+        min_price = int(self.price_range[0])
+        max_price = int(self.price_range[1])
+        fallback_price = int(round(self.marginal_cost))
+        fallback_price = max(min_price, min(max_price, fallback_price))
+        price = fallback_price  # conservative fallback
         speech = ""
 
         # Try [Price] ... [Speech] ... format
@@ -241,7 +244,7 @@ class HomogeneousGoodsMarket(CompetitiveEnvironment):
             nums = re.findall(r'\b(\d+)\b', raw)
             for n in nums:
                 val = int(n)
-                if 10 <= val <= 100:
+                if min_price <= val <= max_price:
                     price = val
                     break
 

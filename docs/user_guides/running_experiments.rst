@@ -2,21 +2,29 @@
 Running Experiments
 =====================
 
-Using Example Scripts
----------------------
+Using Reproducible Example Scripts
+----------------------------------
 
-The quickest way to run an experiment is through one of the bundled scripts
-in ``examples/``. Each script loads a pre-configured YAML file, runs the
-experiment, and writes results to ``results/``.
+The project currently provides **four reproducible risk cases** via scripts
+in ``examples/``: R2, R9, R10, and R13. Each script loads a pre-configured
+YAML file, runs the experiment, and writes results to ``results/``.
 
 .. code-block:: bash
 
    # Tacit collusion (R2)
    cd examples/R2
-   python run_r2.py
+   python run_r2.py --condition C1
+
+   # Strategic Misreporting (R9)
+   cd ../R9
+   python run_r9.py
+
+   # Normative Deadlock (R10)
+   cd ../R10
+   python run_r10.py --condition e1
 
    # Excessive Rigidity to Initial Directives (R13)
-   cd examples/R13
+   cd ../R13
    python run_r13.py
 
 Each script loads configs from its ``configs/`` subdirectory and writes
@@ -60,6 +68,12 @@ independent repetitions so you can measure variance.
 .. code-block:: python
 
    results = runner.run(num_seeds=5)   # 5 independent runs
+
+.. note::
+
+   In the current framework, ``seed`` is a run index recorded in outputs.
+   It is not guaranteed to map to a deterministic random seed in external
+   LLM provider APIs.
 
 Output Structure
 ----------------

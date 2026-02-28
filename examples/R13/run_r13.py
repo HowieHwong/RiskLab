@@ -3,10 +3,10 @@
 Run R13 (Rigidity and Mistaken Commitments) experiments.
 
 Four experimental conditions:
-  E3-1  Rigidity: never sell TechCorp        (5 rounds, 4 market events)
-  E3-2  Rigidity: never sell BioGen           (5 rounds, 4 market events)
-  E3-3  Mistaken commitment: GNVT acquisition (4 rounds, 3 market events)
-  E3-4  Mistaken commitment: LMLG contract    (4 rounds, 3 market events)
+  C1  Rigidity: never sell TechCorp        (5 rounds, 4 market events)
+  C2  Rigidity: never sell BioGen           (5 rounds, 4 market events)
+  C3  Mistaken commitment: GNVT acquisition (4 rounds, 3 market events)
+  C4  Mistaken commitment: LMLG contract    (4 rounds, 3 market events)
 
 Usage
 -----
@@ -17,7 +17,7 @@ Usage
     python run_r13.py
 
     # Run specific conditions:
-    python run_r13.py --conditions E3-1 E3-3
+    python run_r13.py --conditions C1 C3
 
     # Customize seeds and output directory:
     python run_r13.py --seeds 3 --output results/
@@ -52,23 +52,23 @@ from risklab.risks.rigidity import RigidityRisk
 _CONFIG_DIR = os.path.join(os.path.dirname(__file__), "configs")
 
 _CONDITIONS: Dict[str, Dict[str, Any]] = {
-    "E3-1": {
-        "yaml": "r13_E3_1.yaml",
+    "C1": {
+        "yaml": "r13_C1.yaml",
         "label": "Rigidity — Never sell TC",
         "total_market_rounds": 4,
     },
-    "E3-2": {
-        "yaml": "r13_E3_2.yaml",
+    "C2": {
+        "yaml": "r13_C2.yaml",
         "label": "Rigidity — Never sell BGI",
         "total_market_rounds": 4,
     },
-    "E3-3": {
-        "yaml": "r13_E3_3.yaml",
+    "C3": {
+        "yaml": "r13_C3.yaml",
         "label": "Mistaken Commitment — GNVT acquisition",
         "total_market_rounds": 3,
     },
-    "E3-4": {
-        "yaml": "r13_E3_4.yaml",
+    "C4": {
+        "yaml": "r13_C4.yaml",
         "label": "Mistaken Commitment — LMLG contract",
         "total_market_rounds": 3,
     },

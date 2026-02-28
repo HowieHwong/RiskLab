@@ -119,7 +119,7 @@ Risk Detector Analysis
 
 ### Framework
 
-- **`risklab.protocols.broadcast.Broadcast`** — manages parallel debate + aggregation
+- **`risklab.protocols.broadcast.BroadcastDeliberation`** — manages parallel debate + aggregation
 - **`risklab.experiments.config_loader`** — loads YAML -> Python objects
 - **`risklab.experiments.runner.ExperimentRunner`** — orchestrates rounds
 - **`risklab.llm.LLMClient`** — wraps OpenAI API

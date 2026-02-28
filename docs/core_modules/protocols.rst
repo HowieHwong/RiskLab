@@ -82,7 +82,7 @@ Choosing a Protocol
      - Tacit collusion (R2)
    * - ``sequential``
      - Turn-based negotiation, relay
-     - Semantic drift (R6), rigidity (R3)
+     - Rigidity (R13)
    * - ``broadcast``
      - Group deliberation, voting
      - Groupthink (R8), echo chamber (R7)

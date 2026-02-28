@@ -17,8 +17,20 @@ Core Interface
        def get_observation(self, agent_id: str) -> dict:
            """Return the current observation dict for a given agent."""
 
-       def step(self, actions: dict) -> dict:
-           """Process agent actions and advance the world state."""
+def step(self, actions: dict) -> tuple[dict, dict, bool, dict]:
+          """Process agent actions and advance the world state.
+
+          Returns
+          -------
+          observations : dict
+              Updated per-agent observation dicts.
+          rewards : dict
+              Per-agent scalar rewards for this step.
+          done : bool
+              Whether the episode has ended.
+          info : dict
+              Auxiliary diagnostic information.
+          """
 
 Built-in Environments
 ---------------------
@@ -26,26 +38,19 @@ Built-in Environments
 **Competitive**
 
 - ``homogeneous_goods_market`` — Sellers set prices for identical goods.
-  Used to study tacit collusion (R2) and gatekeeping (R12).
+  Used to study tacit collusion (R2).
 
 **Cooperative**
 
 - ``cultural_negotiation`` — Agents negotiate across cultural contexts.
-  Used to study semantic drift (R6) and role rigidity (R3).
+  Used to study normative deadlock (R10).
 - ``grid_exploration`` — Agents explore a grid world collaboratively.
-  Used to study free-riding (R5) and trust exploitation (R1).
-- ``ad_pipeline`` — Advertising pipeline for multi-stage cooperative workflows.
+  Used to study strategic misreporting (R9).
 
 **Collective**
 
 - ``trading_pipeline`` — Sequential production pipeline with shared output.
   Used to study excessive rigidity (R13).
-- ``news_verification`` — Parallel broadcast environment for news
-  verification with asymmetric information injection. Used to study
-  majority sway (R11, Scenario 1).
-- ``remediation_debate`` — Majority/minority debate environment with
-  moderator decision-making. Used to study majority sway (R11,
-  Scenario 2).
 
 YAML Configuration
 ------------------
@@ -66,3 +71,5 @@ YAML Configuration
 
    ``name`` is the registry lookup key. ``parameters`` (not ``params``)
    holds environment-specific key-value pairs.
+   Some repository configs are provided as reference templates and may use
+   environment names that are not registered by default.

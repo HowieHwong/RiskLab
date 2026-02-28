@@ -40,6 +40,7 @@ env/
 results/
 logs/
 *.log
+demo/
 
 # LLM config (contains API keys — do NOT commit!)
 llm_config.yaml
