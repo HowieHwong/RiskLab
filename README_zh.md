@@ -1012,8 +1012,9 @@ class MyCustomProtocol(InteractionProtocol):
 
 ```bibtex
 @article{huang2025emergent,
-  title={Emergent Social Intelligence Risks of Multi-Agent Systems},
-  author={Huang, Yue and Jiang, Yu and Wang, Wenjie and Zhuang, Haomin and Luo, Xiaonan and Chen, Pin-Yu and Dziri, Nouha and Sun, Huan and Zhang, Xiangliang},
+  title={Emergent Intelligence Risks in Generative Multi-Agent Systems},
+  author={Huang, Yue and Jiang, Yu and Wang, Wenjie and Zhuang, Haomin and Luo, Xiaonan and Ma, Yuchen and Xu, Zhangchen and Chen, Zichen and Moniz, Nuno and Chen, Pin-Yu and Chawla, Nitesh V and Dziri, Nouha and Sun, Huan and Zhang, Xiangliang},
+  journal={arXiv preprint},
   year={2025}
 }
 ```

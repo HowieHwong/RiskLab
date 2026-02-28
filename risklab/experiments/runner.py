@@ -73,6 +73,7 @@ class ExperimentRunner:
         task_evaluator: Optional[TaskEvaluator] = None,
         metric_suite: Optional[MetricSuite] = None,
         output_dir: str = "results",
+        on_round_callback: Optional[Any] = None,
     ) -> None:
         self.experiment_id = experiment_id
         self.environment = environment
@@ -85,6 +86,7 @@ class ExperimentRunner:
         self.task_evaluator = task_evaluator
         self.metric_suite = metric_suite or MetricSuite()
         self.output_dir = output_dir
+        self.on_round_callback = on_round_callback
 
         self.logger = TrajectoryLogger(
             experiment_id=experiment_id,
@@ -237,6 +239,10 @@ class ExperimentRunner:
             observations, rewards, done, info = self.environment.step(
                 joint_action
             )
+
+            # Round callback (fires when a full round completes)
+            if self.on_round_callback and info.get("round_complete", True) is not False:
+                self.on_round_callback(info)
 
             # Log
             self.logger.log_step(
