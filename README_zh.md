@@ -1011,11 +1011,11 @@ class MyCustomProtocol(InteractionProtocol):
 如果你在研究中使用了本工具包，请引用：
 
 ```bibtex
-@article{huang2025emergent,
-  title={Emergent Intelligence Risks in Generative Multi-Agent Systems},
-  author={Huang, Yue and Jiang, Yu and Wang, Wenjie and Zhuang, Haomin and Luo, Xiaonan and Ma, Yuchen and Xu, Zhangchen and Chen, Zichen and Moniz, Nuno and Chen, Pin-Yu and Chawla, Nitesh V and Dziri, Nouha and Sun, Huan and Zhang, Xiangliang},
-  journal={arXiv preprint},
-  year={2025}
+@misc{risklab_acl2026_demo_submission,
+  title  = {RiskLab: A Controlled Toolkit for Probing Emergent Risks in LLM-Based Multi-Agent Systems},
+  author = {Huang, Yue and Jiang, Yu and Wang, Wenjie and Wang, Yanbo and Zhou, Zhenhong and Chen, Xiuying and Liu, Yang and Chen, Pin-Yu and Wang, Wei and Zhang, Xiangliang},
+  year   = {2026},
+  url    = {https://openreview.net/forum?id=z3XNpUTgSN}
 }
 ```
 
