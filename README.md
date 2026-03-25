@@ -6,20 +6,41 @@
     <b>Probe, measure, and reproduce emergent social risks in LLM-based multi-agent systems.</b>
   </p>
   <p align="center">
+    <a href="https://boisterous-jelly-5629ba.netlify.app/"><img src="https://img.shields.io/badge/docs-online-brightgreen.svg" alt="Docs"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
     <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
   </p>
   <p align="center">
     <a href="#quick-start">Quick Start</a> •
+    <a href="#key-features">Features</a> •
     <a href="#risk-taxonomy">Risk Taxonomy</a> •
     <a href="#architecture">Architecture</a> •
-    <a href="docs/">Docs</a> •
+    <a href="https://boisterous-jelly-5629ba.netlify.app/">Docs</a> •
     <a href="examples/">Examples</a> •
     <a href="README_zh.md">中文</a>
   </p>
-RiskLab accompanies the paper **"Emergent Social Intelligence Risks of Multi-Agent Systems"**. It turns risk from *phenomenon description* into **programmable, reproducible, controlled interaction experiments**.
 
-Each risk is instantiated via a fully specified **topology – environment – protocol – agent – task** quintuple and evaluated by explicit risk indicators.
+## Why RiskLab?
+
+When multiple LLM agents interact — negotiating prices, relaying information, or making collective decisions — new risks **emerge from the interaction itself**, not from any single agent's failure. Agents may silently collude on prices, conform to majority opinion, drift meaning across handoffs, or rigidly follow outdated instructions. These phenomena mirror well-studied human social dynamics (groupthink, cartel behavior, telephone-game distortion), yet no existing toolkit treats them as first-class, measurable objects.
+
+RiskLab fills this gap. It provides a controlled experimental framework where every risk scenario is fully specified by a **topology – environment – protocol – agent – task** quintuple, making emergent risks **programmable, reproducible, and quantitatively evaluable**.
+
+## Key Features
+
+- **Declarative experiment specification** — One YAML file fully defines an experiment: communication graph, environment, interaction protocol, agent configurations, and risk detectors. No code changes needed to run new scenarios.
+
+- **15 risks across 4 categories** — A systematic taxonomy covering strategic competition (tacit collusion, information withholding), social influence (conformity cascades, authority deference), governance (normative deadlock, role drift), and infrastructure (steganography, semantic drift). Each risk is grounded in social science theory with formal indicators.
+
+- **Topology-driven communication** — Define who talks to whom via adjacency matrices with support for directed/undirected graphs, cyclic/acyclic flows, parallel fan-out stages, and time-varying topologies.
+
+- **Swappable interaction protocols** — Four built-in protocols (Sequential Handoff, Broadcast Deliberation, Market Turn-Based, Queue-Based Execution) that can be mixed and matched with any environment. Same task + different protocol = different risk profile.
+
+- **Multi-provider LLM support** — Seamlessly switch between OpenAI, Anthropic, DeepSeek, Google Gemini, Zhipu, Mistral, Together, and local servers. Per-agent model and parameter overrides supported.
+
+- **Separated task and risk evaluation** — Task completion and risk presence are measured independently. A system can complete its task successfully while still exhibiting dangerous emergent risks.
+
+- **Registry-based extensibility** — Add custom risks, agents, environments, and protocols by subclassing a base class and registering with a decorator. Immediately usable in YAML configs.
 
 ## Workflow
 
@@ -27,7 +48,11 @@ Each risk is instantiated via a fully specified **topology – environment – p
   <img src="workflow.png" alt="RiskLab execution workflow" width="70%">
 </p>
 
-The workflow is split into three stages: configuration, simulation, and evaluation.
+RiskLab's workflow has three stages:
+
+1. **Configure** — Define the experiment in a single YAML: topology (who communicates with whom), environment (task world), protocol (interaction rules), agents (roles & models), and risk detectors.
+2. **Simulate** — The `ExperimentRunner` orchestrates multi-agent interactions, routing messages according to the topology and protocol while recording a full trajectory log.
+3. **Evaluate** — Risk detectors analyze the trajectory to compute quantitative risk indicators. Task evaluators independently measure task completion. Results are exported as structured JSON.
 
 ## Quick Start
 
@@ -36,7 +61,7 @@ pip install -e ".[all_llm]"
 export OPENAI_API_KEY="sk-..."
 ```
 
-Run a built-in experiment (Risk 2 — Tacit Collusion):
+Run a built-in experiment (Risk 1.1 — Tacit Collusion):
 
 ```bash
 cd examples/R2
@@ -84,6 +109,8 @@ Inspect before running:
 ```bash
 python -m risklab.inspect_config my_experiment.yaml --all
 ```
+
+For more examples and detailed usage, see the [documentation](https://boisterous-jelly-5629ba.netlify.app/).
 
 ## Risk Taxonomy
 
@@ -137,9 +164,9 @@ risklab/
 ├── llm.py                   # Unified LLM client (multi-provider)
 ├── agents/                  # Agent abstraction & registry
 ├── environments/            # Task environments
-│   ├── competitive/         #   R1–R5
-│   ├── cooperative/         #   R6–R10
-│   └── collective/          #   R4, R11–R13
+│   ├── competitive/         #   Strategic & competitive risks
+│   ├── cooperative/         #   Information relay & negotiation
+│   └── collective/          #   Collective decision-making
 ├── protocols/               # Interaction protocols
 │   ├── sequential.py        #   Sequential Handoff
 │   ├── broadcast.py         #   Broadcast Deliberation
@@ -164,7 +191,7 @@ class MyRisk(Risk):
     def score(self, trajectory): ...
 ```
 
-New environments, agents, and protocols follow the same pattern — subclass the base, register, and use in YAML. See the [extending guide](docs/user_guides/extending.rst) for details.
+New environments, agents, and protocols follow the same pattern — subclass the base, register, and use in YAML. See the [extending guide](https://boisterous-jelly-5629ba.netlify.app/) for details.
 
 ## Citation
 
@@ -176,4 +203,3 @@ New environments, agents, and protocols follow the same pattern — subclass the
   url    = {https://openreview.net/forum?id=z3XNpUTgSN}
 }
 ```
-
