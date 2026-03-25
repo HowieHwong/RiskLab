@@ -118,7 +118,7 @@ For more examples and detailed usage, see the [documentation](https://boisterous
 
 15 emergent risks across four categories — not bugs in individual agents, but **properties of interaction** that arise only when multiple agents operate together.
 
-> Interactive taxonomy with formal definitions: **[jackwwj619.github.io/MAS-Risks](https://jackwwj619.github.io/MAS-Risks/)**
+> Interactive taxonomy with formal definitions: **[Homepage](https://howiehwong.github.io/blogs/MAS_risk.html)**
 
 ### Category 1 · Strategic & Competitive
 
