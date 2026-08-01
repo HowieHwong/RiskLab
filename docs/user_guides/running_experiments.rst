@@ -6,26 +6,26 @@ Using Reproducible Example Scripts
 ----------------------------------
 
 The project currently provides **four reproducible risk cases** via scripts
-in ``examples/``: R2, R9, R10, and R13. Each script loads a pre-configured
+in ``examples/``: R1.1, R1.3, R1.4, R3.1, R3.2, R3.3, and R3.4. Each script loads a pre-configured
 YAML file, runs the experiment, and writes results to ``results/``.
 
 .. code-block:: bash
 
    # Tacit collusion (R2)
-   cd examples/R2
-   python run_r2.py --condition C1
+   cd examples/R1.1_TacitCollusion
+   python run_r1_1_tacit_collusion.py --condition C1
 
-   # Strategic Misreporting (R9)
-   cd ../R9
-   python run_r9.py
+   # Strategic Misreporting (R1.4)
+   cd ../R1.4_StrategicMisreporting
+   python run_r1_4_strategic_misreporting.py
 
-   # Normative Deadlock (R10)
-   cd ../R10
-   python run_r10.py --condition e1
+   # Normative Deadlock (R3.1)
+   cd ../R3.1_NormativeDeadlock
+   python run_r3_1_normative_deadlock.py --condition e1
 
-   # Excessive Rigidity to Initial Directives (R13)
-   cd ../R13
-   python run_r13.py
+   # Rigidity and Mistaken Commitments (R3.2)
+   cd ../R3.2_Rigidity
+   python run_r3_2_framework.py
 
 Each script loads configs from its ``configs/`` subdirectory and writes
 results to ``results/``.

@@ -69,7 +69,7 @@ Step 2 — Understand the Config
 --------------------------------
 
 Each experiment is defined by a single YAML file.  Open
-``examples/R2/configs/r2_C1_basic.yaml`` (condition **C1**) to see the
+``examples/R1.1_TacitCollusion/configs/r1_1_C1_basic.yaml`` (condition **C1**) to see the
 five-tuple in action:
 
 **Topology** — who can talk to whom:
@@ -140,15 +140,15 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R2
+   cd examples/R1.1_TacitCollusion
 
    # Run a single condition
-   python run_r2.py --condition C1          # C1 (baseline)
-   python run_r2.py --condition C2          # C2 (internal strategy)
-   python run_r2.py --condition C3          # C3 (persona emphasis)
+   python run_r1_1_tacit_collusion.py --condition C1          # C1 (baseline)
+   python run_r1_1_tacit_collusion.py --condition C2          # C2 (internal strategy)
+   python run_r1_1_tacit_collusion.py --condition C3          # C3 (persona emphasis)
 
    # Run all three conditions at once
-   python run_r2.py --all
+   python run_r1_1_tacit_collusion.py --all
 
 The script loads the YAML config, builds all components via
 ``config_loader``, and hands them to ``ExperimentRunner``.
@@ -272,10 +272,10 @@ Step 6 — Customize and Extend
 
 .. code-block:: bash
 
-   cp configs/r2_C1_basic.yaml configs/r2_C4_custom.yaml
-   # Edit system_prompt in r2_C4_custom.yaml
-   # Add "C4": "r2_C4_custom.yaml" to _CONDITIONS in run_r2.py
-   python run_r2.py --condition C4
+   cp configs/r1_1_C1_basic.yaml configs/r1_1_C4_custom.yaml
+   # Edit system_prompt in r1_1_C4_custom.yaml
+   # Add "C4": "r1_1_C4_custom.yaml" to _CONDITIONS in run_r1_1_tacit_collusion.py
+   python run_r1_1_tacit_collusion.py --condition C4
 
 **Use the Python API directly** for tighter control:
 
@@ -287,7 +287,7 @@ Step 6 — Customize and Extend
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("configs/r2_C1_basic.yaml")
+   config = load_experiment_config("configs/r1_1_C1_basic.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(
        experiment_id=components["experiment_id"],
@@ -314,7 +314,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R2/`` directory
+     - Make sure you run from the ``examples/R1.1_TacitCollusion/`` directory
    * - Unexpected prices or parse errors
      - Check the trajectory JSON for raw LLM outputs — the agent may
        need a clearer system prompt

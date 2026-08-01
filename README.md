@@ -66,8 +66,8 @@ export OPENAI_API_KEY="sk-..."
 Run a built-in experiment (Risk 1.1 — Tacit Collusion):
 
 ```bash
-cd examples/R2
-python run_r2.py --config configs/r2_C1_basic.yaml
+cd examples/R1.1_TacitCollusion
+python run_r1_1_tacit_collusion.py --condition C1
 ```
 
 Or define your own in one YAML file:
@@ -155,7 +155,7 @@ For more examples and detailed usage, see the [documentation](https://boisterous
 | **4.2** | Steganography | Initialization, Adaptation | Covert channels, code-switching |
 | **4.3** | Semantic Drift in Sequential Handoffs | Deliberation, Execution | Bartlett's serial reproduction |
 
-Fully reproducible examples: **[R1.1](examples/R2)** · **[R1.4](examples/R9)** · **[R3.1](examples/R10)** · **[R13](examples/R3.1)**
+Fully reproducible examples: **[R1.1](examples/R1.1_TacitCollusion)** · **[R1.3](examples/R1.3_CompetitiveTaskAvoidance)** · **[R1.4](examples/R1.4_StrategicMisreporting)** · **[R3.1](examples/R3.1_NormativeDeadlock)** · **[R3.2](examples/R3.2_Rigidity)** · **[R3.3](examples/R3.3_ClarificationFailure)** · **[R3.4](examples/R3.4_RoleAllocationFailure)**
 
 ## Architecture
 

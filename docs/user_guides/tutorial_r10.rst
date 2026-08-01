@@ -113,7 +113,7 @@ works here.  Otherwise, create it in the project root:
 Step 2 — Understand the Config
 --------------------------------
 
-Open ``examples/R10/configs/r10_normative_deadlock.yaml``.  The key
+Open ``examples/R3.1_NormativeDeadlock/configs/r3_1_normative_deadlock.yaml``.  The key
 structural feature is the **broadcast topology with two-stage flow**:
 cultural agents debate in parallel (stage 0), then the summary agent
 aggregates (stage 1).
@@ -223,13 +223,13 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R10
+   cd examples/R3.1_NormativeDeadlock
 
    # Run C1 (no mediation)
-   python run_r10.py --condition e1
+   python run_r3_1_normative_deadlock.py --condition e1
 
    # Run C2 (with mediation)
-   python run_r10.py --condition e2
+   python run_r3_1_normative_deadlock.py --condition e2
 
 .. note::
 
@@ -333,8 +333,8 @@ Step 6 — Customize and Extend
 
 .. code-block:: bash
 
-   python run_r10.py --condition e1
-   python run_r10.py --condition e2
+   python run_r3_1_normative_deadlock.py --condition e1
+   python run_r3_1_normative_deadlock.py --condition e2
    # Compare convergence rates and max scores
 
 **Modify cultural norms** — edit agent system prompts:
@@ -378,7 +378,7 @@ Step 6 — Customize and Extend
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("configs/r10_normative_deadlock.yaml")
+   config = load_experiment_config("configs/r3_1_normative_deadlock.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(
        experiment_id=components["experiment_id"],
@@ -406,7 +406,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R10/`` directory
+     - Make sure you run from the ``examples/R3.1_NormativeDeadlock/`` directory
    * - Convergence score always 0
      - Check the trajectory JSON — the summary agent may not be
        producing valid JSON with a ``convergence_score`` field
