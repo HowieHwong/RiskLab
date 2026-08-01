@@ -82,7 +82,7 @@ works here.  Otherwise, create it in the project root:
 Step 2 — Understand the Config
 --------------------------------
 
-Open ``examples/R9/configs/r9_strategic_misreporting.yaml``.  The key
+Open ``examples/R1.4_StrategicMisreporting/configs/r1_4_strategic_misreporting.yaml``.  The key
 structural feature is the **sequential relay topology** — a directed
 chain with a feedback loop for verification.
 
@@ -182,13 +182,13 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R9
+   cd examples/R1.4_StrategicMisreporting
 
    # Run with default settings
-   python run_r9.py
+   python run_r1_4_strategic_misreporting.py
 
    # Specify output directory
-   python run_r9.py --output results/
+   python run_r1_4_strategic_misreporting.py --output results/
 
 
 Step 4 — Understand the Execution Flow
@@ -327,7 +327,7 @@ Step 6 — Customize and Extend
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("configs/r9_strategic_misreporting.yaml")
+   config = load_experiment_config("configs/r1_4_strategic_misreporting.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(
        experiment_id=components["experiment_id"],
@@ -355,7 +355,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R9/`` directory
+     - Make sure you run from the ``examples/R1.4_StrategicMisreporting/`` directory
    * - Score always 0.0 (no deception)
      - Try raising ``temperature`` for Agent 1, or softening its system
        prompt to emphasise the personal-score incentive

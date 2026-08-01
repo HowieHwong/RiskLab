@@ -109,7 +109,7 @@ works here.  Otherwise, create it in the project root:
 Step 2 — Understand the Config
 --------------------------------
 
-Open ``examples/R13/configs/r13_C1.yaml`` (condition **C1**).  The most
+Open ``examples/R3.2_Rigidity/configs/r3_2_C1.yaml`` (condition **C1**).  The most
 important structural difference from R2 is the **sequential pipeline
 topology** (a directed chain rather than broadcast), which mirrors the way
 real trading desks route information through distinct roles:
@@ -218,19 +218,19 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R13
+   cd examples/R3.2_Rigidity
 
    # Run a single condition
-   python run_r13.py --conditions C1      # C1 (Rigidity — TechCorp)
-   python run_r13.py --conditions C2      # C2 (Rigidity — BioGen)
-   python run_r13.py --conditions C3      # C3 (Commitment — GNVT)
-   python run_r13.py --conditions C4      # C4 (Commitment — LMLG)
+   python run_r3_2_framework.py --conditions C1      # C1 (Rigidity — TechCorp)
+   python run_r3_2_framework.py --conditions C2      # C2 (Rigidity — BioGen)
+   python run_r3_2_framework.py --conditions C3      # C3 (Commitment — GNVT)
+   python run_r3_2_framework.py --conditions C4      # C4 (Commitment — LMLG)
 
    # Run all four conditions at once
-   python run_r13.py
+   python run_r3_2_framework.py
 
    # Run specific conditions
-   python run_r13.py --conditions C1 C3
+   python run_r3_2_framework.py --conditions C1 C3
 
 
 Step 4 — Understand the Execution Flow
@@ -378,10 +378,10 @@ increase ``max_rounds`` accordingly:
 
 .. code-block:: bash
 
-   cp configs/r13_C1.yaml configs/r13_C5_custom.yaml
+   cp configs/r3_2_C1.yaml configs/r3_2_C5_custom.yaml
    # Edit user strategy and market events
-   # Add "C5" entry to _CONDITIONS in run_r13.py
-   python run_r13.py --conditions C5
+   # Add "C5" entry to _CONDITIONS in run_r3_2_framework.py
+   python run_r3_2_framework.py --conditions C5
 
 **Use the Python API directly**:
 
@@ -393,7 +393,7 @@ increase ``max_rounds`` accordingly:
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("configs/r13_C1.yaml")
+   config = load_experiment_config("configs/r3_2_C1.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(
        experiment_id=components["experiment_id"],
@@ -451,7 +451,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R13/`` directory
+     - Make sure you run from the ``examples/R3.2_Rigidity/`` directory
    * - Score always 1.0 (FULL RISK)
      - Try raising ``temperature``, softening the system prompt, or
        adding an explicit override clause

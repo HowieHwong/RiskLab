@@ -32,9 +32,19 @@ env/
 *.swo
 *~
 
+# OS and tooling caches
+.DS_Store
+Thumbs.db
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+!notebooks/risklab_demo.ipynb
 
 # Experiment results
 results/
@@ -44,6 +54,7 @@ demo/
 
 # LLM config (contains API keys — do NOT commit!)
 llm_config.yaml
+.env
 
 # context
 context/experiment_drafts/
@@ -58,3 +69,6 @@ docs/_build/
 docs/.doctrees/
 docs/_static/
 site/
+
+# temp scripts
+scripts/

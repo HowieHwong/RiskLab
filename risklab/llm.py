@@ -158,7 +158,13 @@ class ProviderConfig:
     def resolve_api_base(self) -> Optional[str]:
         """Return the effective API base URL."""
         if self.api_base:
+            m = _ENV_VAR_PATTERN.match(self.api_base)
+            if m:
+                return os.environ.get(m.group(1))
             return self.api_base
+        env_base = os.environ.get(f"{self.name.upper()}_BASE_URL")
+        if env_base:
+            return env_base
         return _DEFAULT_API_BASES.get(self.name)
 
     def resolve_api_type(self) -> APIType:
@@ -426,6 +432,8 @@ class LLMClient:
         api_type = provider.resolve_api_type()
         api_key = provider.resolve_api_key()
         api_base = provider.resolve_api_base()
+        provider_kwargs = dict(provider.parameters)
+        provider_kwargs.update(kwargs)
 
         if api_type in (APIType.OPENAI, APIType.CUSTOM):
             return self._call_openai_compatible(
@@ -436,7 +444,7 @@ class LLMClient:
                 api_key=api_key,
                 api_base=api_base,
                 extra_headers=provider.extra_headers,
-                **kwargs,
+                **provider_kwargs,
             )
         elif api_type == APIType.ANTHROPIC:
             return self._call_anthropic(
@@ -447,7 +455,7 @@ class LLMClient:
                 api_key=api_key,
                 api_base=api_base,
                 extra_headers=provider.extra_headers,
-                **kwargs,
+                **provider_kwargs,
             )
         else:
             raise ValueError(f"Unsupported API type: {api_type}")
@@ -484,11 +492,16 @@ class LLMClient:
             client_kwargs["default_headers"] = extra_headers
 
         client = OpenAI(**client_kwargs)
+        token_limit_param = (
+            {"max_completion_tokens": max_tokens}
+            if model_name.startswith("gpt-5")
+            else {"max_tokens": max_tokens}
+        )
         response = client.chat.completions.create(
             model=model_name,
             messages=messages,
             temperature=temperature,
-            max_tokens=max_tokens,
+            **token_limit_param,
             **kwargs,
         )
         return response.choices[0].message.content or ""
