@@ -21,7 +21,7 @@ from IPython.display import HTML, Markdown, display
 
 
 COLORS = {
-    "ink": "#243447",
+    "ink": "#000000",
     "navy": "#355070",
     "teal": "#2A9D8F",
     "sage": "#84A98C",
@@ -30,6 +30,9 @@ COLORS = {
     "slate": "#6C7A89",
     "grid": "#DCE3E8",
     "paper": "#FAFAF7",
+    "card_navy": "#DCE6F2",
+    "card_coral": "#F6DDE0",
+    "card_sage": "#DDEBDF",
 }
 
 _PRICE_PATTERN = re.compile(
@@ -48,19 +51,21 @@ def configure_academic_style() -> None:
         {
             "figure.facecolor": COLORS["paper"],
             "axes.facecolor": COLORS["paper"],
-            "axes.edgecolor": COLORS["ink"],
-            "axes.labelcolor": COLORS["ink"],
-            "axes.titlecolor": COLORS["ink"],
+            "axes.edgecolor": "black",
+            "axes.labelcolor": "black",
+            "axes.titlecolor": "black",
             "axes.titlesize": 13,
             "axes.titleweight": "normal",
             "font.family": "Verdana",
             "font.size": 10,
             "font.weight": "normal",
+            "legend.labelcolor": "black",
+            "text.color": "black",
             "grid.color": COLORS["grid"],
             "grid.linewidth": 0.8,
             "legend.frameon": False,
-            "xtick.color": COLORS["ink"],
-            "ytick.color": COLORS["ink"],
+            "xtick.color": "black",
+            "ytick.color": "black",
         }
     )
 
@@ -127,11 +132,11 @@ def plot_tacit_collusion(snapshot: dict[str, Any]) -> None:
         gridspec_kw={"width_ratios": [1.35, 1]},
     )
     fig.suptitle(
-        "R1.1 · Real trajectory: transaction prices rise in every round",
+        "R1.1 — Tacit Collusion",
         x=0.5,
         ha="center",
         fontsize=15,
-        color=COLORS["ink"],
+        color="black",
     )
 
     ax = axes[0]
@@ -148,7 +153,7 @@ def plot_tacit_collusion(snapshot: dict[str, Any]) -> None:
     ax.axhspan(15, max_bid + 2, color=COLORS["coral"], alpha=0.07)
     ax.axhline(
         15,
-        color=COLORS["coral"],
+        color="black",
         linewidth=1.2,
         linestyle=(0, (4, 3)),
         label="high-price threshold",
@@ -206,11 +211,11 @@ def plot_tacit_collusion(snapshot: dict[str, Any]) -> None:
         transform=ax.transAxes,
         ha="left",
         va="top",
-        color=COLORS["coral"],
+        color="black",
         fontsize=11,
     )
     ax.set(
-        title="B. Transaction price",
+        title="B. Transaction Price",
         xlabel="Round",
         ylabel="Price",
         xlim=(1, len(rounds)),
@@ -263,7 +268,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
     ax.set_ylim(0, 1)
     ax.axis("off")
     ax.set_title(
-        "R3.3 · Real trajectory: ambiguity passes through without a clarification gate",
+        "R3.3 — Fail to Ask for Clarification",
         loc="center",
         pad=16,
         fontsize=15,
@@ -293,7 +298,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
             title,
             ha="center",
             va="center",
-            color="white",
+            color="black",
             fontsize=11,
         )
         ax.text(
@@ -302,7 +307,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
             subtitle,
             ha="center",
             va="center",
-            color="white",
+            color="black",
             fontsize=9.2,
             linespacing=1.3,
         )
@@ -326,7 +331,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
         0.24,
         "Ambiguous user request",
         "Rhode Island +\n'Colossus of Apollo'",
-        COLORS["navy"],
+        COLORS["card_navy"],
     )
     add_card(
         0.36,
@@ -335,7 +340,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
         0.24,
         "Planner",
         "No clarification asked\nItinerary produced",
-        COLORS["coral"],
+        COLORS["card_coral"],
     )
     add_arrow((0.28, 0.50), (0.36, 0.50))
 
@@ -347,7 +352,11 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
     }
     for agent, y_position in backend_positions.items():
         acted_without_clarification = agent in risk_agents
-        color = COLORS["coral"] if acted_without_clarification else COLORS["sage"]
+        color = (
+            COLORS["card_coral"]
+            if acted_without_clarification
+            else COLORS["card_sage"]
+        )
         subtitle = (
             "Acted without\nclarification"
             if acted_without_clarification
@@ -368,7 +377,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
         0.5,
         0.20,
         "RISK DETECTED",
-        color=COLORS["coral"],
+        color="black",
         fontsize=12,
         ha="center",
     )
@@ -376,7 +385,7 @@ def plot_clarification_pipeline(case: dict[str, Any]) -> None:
         0.5,
         0.15,
         "Frontend continued execution; 3 backend agents acted on the unresolved plan.",
-        color=COLORS["ink"],
+        color="black",
         fontsize=9.5,
         ha="center",
     )
