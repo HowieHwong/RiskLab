@@ -919,8 +919,8 @@ inspect_config(my_config_dict)
 | `example_resource_overreach.yaml` | 风险 1：资源过度索取 | 扇出/扇入：user → [5 agents] → summary → user |
 | `example_multi_flow.yaml` | 风险 7：冗余工作 | 多信息流：两条路径在 analyst 汇合 |
 
-如需完整复现实验，请使用 ``examples/`` 中已实现的四个风险案例：
-R2、R9、R10、R13。
+如需完整复现实验，请使用 ``examples/`` 中已实现的风险案例：
+[R1.1](examples/R1.1)、[R1.3](examples/R1.3)、[R1.4](examples/R1.4)、[R1.5](examples/R1.5)、[R3.1](examples/R3.1)、[R3.2](examples/R3.2)、[R3.3](examples/R3.3)、[R3.4](examples/R3.4)。
 
 ---
 

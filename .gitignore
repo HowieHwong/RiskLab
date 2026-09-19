@@ -22,8 +22,10 @@ wheels/
 
 # Virtual environments
 venv/
+.venv/
 ENV/
 env/
+MAS/
 
 # IDE
 .vscode/
@@ -32,9 +34,19 @@ env/
 *.swo
 *~
 
+# OS and tooling caches
+.DS_Store
+Thumbs.db
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+!notebooks/risklab_demo.ipynb
 
 # Experiment results
 results/
@@ -44,11 +56,18 @@ demo/
 
 # LLM config (contains API keys — do NOT commit!)
 llm_config.yaml
+.env
 
 # context
 context/experiment_drafts/
 context/original_paper.md
+context/main.tex
 .claude/
+
+# Research notes (experiment plans, reviewer comments, the source paper and
+# its per-risk write-ups) — never part of the tree
+docs/notebooks/
+risklab/reference/
 
 # Archive
 archive/
@@ -58,3 +77,20 @@ docs/_build/
 docs/.doctrees/
 docs/_static/
 site/
+
+# temp scripts
+scripts/
+
+# Local analysis tooling and write-ups for the supplementary experiments.
+# They read results/ and are not part of the framework: the tree keeps the
+# experiment runners, configs and READMEs only.
+examples/R1.1/fig_*.svg
+examples/R1.1/fig_*.png
+examples/*/aggregate_models.py
+examples/*/reaggregate.py
+examples/*/figure_data.py
+examples/*/coord_scan.py
+examples/*/make_figure*.py
+examples/R1.5/risk_attitude_sweep.py
+examples/*/ablation-*.md
+examples/*/response-draft-*.md

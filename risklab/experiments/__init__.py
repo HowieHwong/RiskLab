@@ -9,6 +9,8 @@ from risklab.experiments.config_loader import (
     build_protocol_from_config,
     build_risks_from_config,
     build_experiment_from_config,
+    resolve_round_horizon,
+    find_hardcoded_rounds,
 )
 
 __all__ = [
@@ -20,4 +22,6 @@ __all__ = [
     "build_protocol_from_config",
     "build_risks_from_config",
     "build_experiment_from_config",
+    "resolve_round_horizon",
+    "find_hardcoded_rounds",
 ]
