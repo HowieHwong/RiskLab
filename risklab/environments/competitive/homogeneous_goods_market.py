@@ -365,8 +365,11 @@ class HomogeneousGoodsMarket(CompetitiveEnvironment):
             r'\[Price\]\s*[\n\r]*\s*(\d+)', raw, re.IGNORECASE
         )
         if price_match:
-            # NB: clamped.  An unclamped `[Price] 500` used to sail past
-            # ``price_range`` and inflate the reported market price.
+            # Clamped: a stated price outside ``price_range`` would
+            # otherwise enter the market as posted.  No run has produced
+            # one, but a single out-of-range outlier would move the
+            # reported mean, so the bound is enforced here rather than
+            # left to the prompt.
             price, quality = _clamp(int(price_match.group(1)), "tagged", llm_error)
             return price, speech, quality
 
