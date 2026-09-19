@@ -84,10 +84,8 @@ scripts/
 # Local analysis tooling and write-ups for the supplementary experiments.
 # They read results/ and are not part of the framework: the tree keeps the
 # experiment runners, configs and READMEs only.
-examples/R1.1/configs/r2_exp*.yaml
 examples/R1.1/fig_*.svg
 examples/R1.1/fig_*.png
-examples/*/run_ablation.py
 examples/*/aggregate_models.py
 examples/*/reaggregate.py
 examples/*/figure_data.py
