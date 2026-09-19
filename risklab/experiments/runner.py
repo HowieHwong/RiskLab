@@ -256,6 +256,8 @@ class ExperimentRunner:
                 metadata={
                     "listeners": listeners,
                     "input_data": input_data,
+                    # Reasoning summary for reasoning models; None otherwise.
+                    "reasoning": action_result.get("reasoning"),
                 },
             )
 

@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -82,6 +83,68 @@ _MODEL_PREFIX_TO_PROVIDER: List[tuple] = [
 ]
 
 _ENV_VAR_PATTERN = re.compile(r"^\$\{(\w+)\}$")
+
+
+# ======================================================================
+# .env support
+# ======================================================================
+
+# Project root: risklab/llm.py -> risklab/ -> <root>
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+_dotenv_loaded = False
+_dotenv_lock = threading.Lock()
+
+
+def load_dotenv(path: Optional[str] = None, override: bool = False) -> None:
+    """Populate ``os.environ`` from a ``.env`` file (stdlib only, idempotent).
+
+    ``${ENV_VAR}`` references in ``llm_config.yaml`` are resolved against the
+    process environment, so keys kept in a project-root ``.env`` would
+    otherwise require the caller to ``export`` them first.  This reads that
+    file once, on the first key lookup.
+
+    Real environment variables always win unless ``override=True``; the file
+    is optional and a missing or malformed line is skipped silently.
+    ``RISKLAB_DOTENV`` overrides the search path.
+    """
+    global _dotenv_loaded
+    if path is None:
+        # Hold the lock across the whole read: agents run in parallel threads,
+        # and a flag set before the file is parsed lets a second thread sail
+        # past into a call that has no API key yet.
+        with _dotenv_lock:
+            if _dotenv_loaded:
+                return
+            path = os.environ.get("RISKLAB_DOTENV") or os.path.join(_PROJECT_ROOT, ".env")
+            try:
+                _load_dotenv_file(path, override)
+            finally:
+                _dotenv_loaded = True
+        return
+
+    _load_dotenv_file(path, override)
+
+
+def _load_dotenv_file(path: str, override: bool) -> None:
+    """Parse one ``.env`` file into ``os.environ``.  A missing file is a no-op."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except OSError:
+        return
+
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        if line.startswith("export "):
+            line = line[len("export "):]
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip("\'\"")
+        if key and (override or key not in os.environ):
+            os.environ[key] = value
 
 
 # ======================================================================
@@ -140,7 +203,12 @@ class ProviderConfig:
         2. Literal non-empty string  →  use as-is
         3. Convention-based env var   →  e.g. ``OPENAI_API_KEY`` for ``openai``
         4. ``None``
+
+        A project-root ``.env`` is loaded first (see :func:`load_dotenv`), so
+        steps 1 and 3 see keys kept there without an explicit ``export``.
         """
+        load_dotenv()
+
         if self.api_key is not None:
             m = _ENV_VAR_PATTERN.match(self.api_key)
             if m:
@@ -372,6 +440,25 @@ class LLMConfig:
 
 
 # ======================================================================
+# Helpers
+# ======================================================================
+
+
+def _usage_to_dict(usage: Any) -> Optional[Dict[str, Any]]:
+    """Best-effort conversion of a provider usage object into a plain dict."""
+    if usage is None:
+        return None
+    for attr in ("model_dump", "dict"):
+        fn = getattr(usage, attr, None)
+        if callable(fn):
+            try:
+                return fn()
+            except Exception:
+                pass
+    return {k: v for k, v in vars(usage).items() if not k.startswith("_")} or None
+
+
+# ======================================================================
 # Unified LLM Client
 # ======================================================================
 
@@ -422,6 +509,35 @@ class LLMClient:
         -------
         str
             The text content of the assistant's reply.
+        """
+        return self.chat_detailed(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs,
+        )["content"]
+
+    def chat_detailed(
+        self,
+        model: Optional[str] = None,
+        messages: Optional[List[Dict[str, str]]] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Like :meth:`chat`, but also returns the reasoning trace and usage.
+
+        Reasoning models (anything routed through OpenRouter with
+        ``reasoning`` enabled) expose a reasoning summary
+        alongside the answer.  ``chat()`` throws it away; this keeps it, which
+        is what experiments analysing *why* an agent acted need.
+
+        Returns
+        -------
+        dict
+            ``{"content": str, "reasoning": str | None, "usage": dict | None}``.
+            ``reasoning`` is ``None`` for ordinary models.
         """
         model = model or self.config.default_model
         messages = messages or []
@@ -474,7 +590,7 @@ class LLMClient:
         api_base: Optional[str],
         extra_headers: Optional[Dict[str, str]] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> Dict[str, Any]:
         try:
             from openai import OpenAI
         except ImportError:
@@ -504,7 +620,15 @@ class LLMClient:
             **token_limit_param,
             **kwargs,
         )
-        return response.choices[0].message.content or ""
+        msg = response.choices[0].message
+        # Reasoning models surface their summary on the message; OpenRouter
+        # uses ``reasoning``, some OpenAI-compatible servers ``reasoning_content``.
+        reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None)
+        return {
+            "content": msg.content or "",
+            "reasoning": reasoning,
+            "usage": _usage_to_dict(getattr(response, "usage", None)),
+        }
 
     # ------------------------------------------------------------------
     # Anthropic backend
@@ -520,7 +644,7 @@ class LLMClient:
         api_base: Optional[str],
         extra_headers: Optional[Dict[str, str]] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> Dict[str, Any]:
         try:
             import anthropic
         except ImportError:
@@ -560,4 +684,8 @@ class LLMClient:
 
         response = client.messages.create(**create_kwargs)
         # Anthropic returns content blocks
-        return response.content[0].text if response.content else ""
+        return {
+            "content": response.content[0].text if response.content else "",
+            "reasoning": None,
+            "usage": _usage_to_dict(getattr(response, "usage", None)),
+        }
