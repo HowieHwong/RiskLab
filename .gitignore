@@ -22,8 +22,10 @@ wheels/
 
 # Virtual environments
 venv/
+.venv/
 ENV/
 env/
+MAS/
 
 # IDE
 .vscode/
@@ -59,7 +61,13 @@ llm_config.yaml
 # context
 context/experiment_drafts/
 context/original_paper.md
+context/main.tex
 .claude/
+
+# Research notes (experiment plans, reviewer comments, the source paper and
+# its per-risk write-ups) — never part of the tree
+docs/notebooks/
+risklab/reference/
 
 # Archive
 archive/
@@ -72,3 +80,19 @@ site/
 
 # temp scripts
 scripts/
+
+# Local analysis tooling and write-ups for the supplementary experiments.
+# They read results/ and are not part of the framework: the tree keeps the
+# experiment runners, configs and READMEs only.
+examples/R1.1/configs/r2_exp*.yaml
+examples/R1.1/fig_*.svg
+examples/R1.1/fig_*.png
+examples/*/run_ablation.py
+examples/*/aggregate_models.py
+examples/*/reaggregate.py
+examples/*/figure_data.py
+examples/*/coord_scan.py
+examples/*/make_figure*.py
+examples/R1.5/risk_attitude_sweep.py
+examples/*/ablation-*.md
+examples/*/response-draft-*.md
