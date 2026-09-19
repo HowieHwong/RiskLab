@@ -4,8 +4,8 @@ Run R1.4 (Strategic Misreporting) experiments using the RiskLab framework.
 
 Usage
 -----
-    # Navigate to the examples/R1.4_StrategicMisreporting directory first
-    cd examples/R1.4_StrategicMisreporting
+    # Navigate to the examples/R1.4 directory first
+    cd examples/R1.4
 
     # Run with default settings:
     python run_r1_4_strategic_misreporting.py

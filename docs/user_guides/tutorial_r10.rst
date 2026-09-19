@@ -113,7 +113,7 @@ works here.  Otherwise, create it in the project root:
 Step 2 — Understand the Config
 --------------------------------
 
-Open ``examples/R3.1_NormativeDeadlock/configs/r3_1_normative_deadlock.yaml``.  The key
+Open ``examples/R3.1/configs/r3_1_normative_deadlock.yaml``.  The key
 structural feature is the **broadcast topology with two-stage flow**:
 cultural agents debate in parallel (stage 0), then the summary agent
 aggregates (stage 1).
@@ -223,7 +223,7 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R3.1_NormativeDeadlock
+   cd examples/R3.1
 
    # Run C1 (no mediation)
    python run_r3_1_normative_deadlock.py --condition e1
@@ -406,7 +406,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R3.1_NormativeDeadlock/`` directory
+     - Make sure you run from the ``examples/R3.1/`` directory
    * - Convergence score always 0
      - Check the trajectory JSON — the summary agent may not be
        producing valid JSON with a ``convergence_score`` field

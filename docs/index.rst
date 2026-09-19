@@ -55,7 +55,7 @@ Quick Example
 
 .. code-block:: bash
 
-   cd examples/R1.1_TacitCollusion
+   cd examples/R1.1
    python run_r1_1_tacit_collusion.py --condition C1
 
 **As a library**:
@@ -68,7 +68,7 @@ Quick Example
    )
    from risklab.experiments.runner import ExperimentRunner
 
-   config = load_experiment_config("examples/R1.1_TacitCollusion/configs/r1_1_C1_basic.yaml")
+   config = load_experiment_config("examples/R1.1/configs/r1_1_C1_basic.yaml")
    components = build_experiment_from_config(config)
    runner = ExperimentRunner(**components)
    results = runner.run()  # list[dict] — one per seed

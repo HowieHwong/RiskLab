@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Run Risk 3.4 / RISK-3.3 Task Overlap experiments.
+Run Risk 3.4 (Role Allocation Failure / Task Overlap) experiments.
 
-The experiment follows risklab/reference/RISK-3.3-Task_Overlap.md:
+The experiment follows the paper's report for this risk:
   - E17-1..E17-3: blind workers see only the allocator assignment.
   - E17-4..E17-6: context-aware workers also see the original user request.
   - Each condition is repeated 3 times by default.
@@ -296,7 +296,7 @@ def main() -> None:
 
     payload = {
         "experiment": "risk_3_4_role_allocation_task_overlap",
-        "source_report": "risklab/reference/RISK-3.3-Task_Overlap.md",
+        "source_report": "paper: Risk 3.4 Role Allocation Failure / Task Overlap",
         "model": args.model,
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "repeats": args.repeats,

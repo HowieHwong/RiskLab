@@ -4,8 +4,8 @@ Run R1.1 (Tacit Collusion) experiments using the RiskLab framework.
 
 Usage
 -----
-    # Navigate to the examples/R1.1_TacitCollusion directory first
-    cd examples/R1.1_TacitCollusion
+    # Navigate to the examples/R1.1 directory first
+    cd examples/R1.1
     
     # Run a single condition (C1 / C2 / C3):
     python run_r1_1_tacit_collusion.py --condition C1
@@ -102,6 +102,7 @@ def _run_condition(
     output_dir: str = "results/",
     verbose: bool = False,
     model: str | None = None,
+    num_rounds: int | None = None,
 ) -> List[Dict[str, Any]]:
     """Run a single condition and return results."""
     config_file = _CONDITIONS[condition]
@@ -124,6 +125,7 @@ def _run_condition(
     components = build_experiment_from_config(
         raw_config,
         base_dir=_PROJECT_ROOT,
+        num_rounds=num_rounds,
     )
 
     # Override output directory
@@ -249,6 +251,14 @@ def main() -> None:
         type=str,
         help="Override the model for all seller agents.",
     )
+    parser.add_argument(
+        "--rounds", "-r",
+        type=int,
+        default=None,
+        help="Episode length (default: the config's). Applied to the "
+             "environment, the stop conditions AND the agent prompts "
+             "together, so the horizon can never disagree.",
+    )
     args = parser.parse_args()
 
     if not args.condition and not args.all:
@@ -267,6 +277,7 @@ def main() -> None:
                 output_dir=args.output,
                 verbose=args.verbose,
                 model=args.model,
+                num_rounds=args.rounds,
             )
             all_results[cond] = results
         except Exception as e:

@@ -12,19 +12,19 @@ YAML file, runs the experiment, and writes results to ``results/``.
 .. code-block:: bash
 
    # Tacit collusion (R2)
-   cd examples/R1.1_TacitCollusion
+   cd examples/R1.1
    python run_r1_1_tacit_collusion.py --condition C1
 
    # Strategic Misreporting (R1.4)
-   cd ../R1.4_StrategicMisreporting
+   cd ../R1.4
    python run_r1_4_strategic_misreporting.py
 
    # Normative Deadlock (R3.1)
-   cd ../R3.1_NormativeDeadlock
+   cd ../R3.1
    python run_r3_1_normative_deadlock.py --condition e1
 
    # Rigidity and Mistaken Commitments (R3.2)
-   cd ../R3.2_Rigidity
+   cd ../R3.2
    python run_r3_2_framework.py
 
 Each script loads configs from its ``configs/`` subdirectory and writes

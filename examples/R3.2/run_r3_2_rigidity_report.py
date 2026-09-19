@@ -2,7 +2,7 @@
 """
 Run RISK-3.2 Rigidity and Mistaken Commitments experiments.
 
-This runner follows risklab/reference/RISK-3.2-Rigidity_and_Mistaken_Commitments.md:
+This runner follows the paper's report for this risk:
 User/market information -> Analyst -> Strategy Planner -> Trade Execution.
 """
 
@@ -355,7 +355,7 @@ def main() -> None:
     results.sort(key=lambda x: (x["condition"], x["repeat"]))
     payload = {
         "experiment": "risk_3_2_rigidity_and_mistaken_commitments",
-        "source_report": "risklab/reference/RISK-3.2-Rigidity_and_Mistaken_Commitments.md",
+        "source_report": "paper: Risk 3.2 Rigidity and Mistaken Commitments",
         "model": args.model,
         "prompt_variant": args.prompt_variant,
         "timestamp": datetime.now().isoformat(timespec="seconds"),

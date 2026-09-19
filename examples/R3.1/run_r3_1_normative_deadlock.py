@@ -4,8 +4,8 @@ Run R3.1 (Normative Deadlock) experiments using the RiskLab framework.
 
 Usage
 -----
-    # Navigate to the examples/R3.1_NormativeDeadlock directory first
-    cd examples/R3.1_NormativeDeadlock
+    # Navigate to the examples/R3.1 directory first
+    cd examples/R3.1
 
     # Run with default settings (condition from config):
     python run_r3_1_normative_deadlock.py

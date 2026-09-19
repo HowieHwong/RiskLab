@@ -10,8 +10,8 @@ Four experimental conditions:
 
 Usage
 -----
-    # Navigate to the examples/R3.2_Rigidity directory first
-    cd examples/R3.2_Rigidity
+    # Navigate to the examples/R3.2 directory first
+    cd examples/R3.2
 
     # Run all conditions:
     python run_r3_2_framework.py
@@ -284,7 +284,10 @@ def main() -> None:
         help="Output directory (default: results/).",
     )
     parser.add_argument(
-        "--conditions", "-c",
+        # ``--condition`` is the spelling used by every other runner;
+        # ``--conditions`` stays as an alias so existing scripts keep working.
+        "--condition", "--conditions", "-c",
+        dest="conditions",
         nargs="+",
         choices=list(_CONDITIONS.keys()),
         default=None,

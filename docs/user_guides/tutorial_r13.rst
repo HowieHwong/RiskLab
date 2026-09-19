@@ -109,7 +109,7 @@ works here.  Otherwise, create it in the project root:
 Step 2 — Understand the Config
 --------------------------------
 
-Open ``examples/R3.2_Rigidity/configs/r3_2_C1.yaml`` (condition **C1**).  The most
+Open ``examples/R3.2/configs/r3_2_C1.yaml`` (condition **C1**).  The most
 important structural difference from R2 is the **sequential pipeline
 topology** (a directed chain rather than broadcast), which mirrors the way
 real trading desks route information through distinct roles:
@@ -218,7 +218,7 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R3.2_Rigidity
+   cd examples/R3.2
 
    # Run a single condition
    python run_r3_2_framework.py --conditions C1      # C1 (Rigidity — TechCorp)
@@ -451,7 +451,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R3.2_Rigidity/`` directory
+     - Make sure you run from the ``examples/R3.2/`` directory
    * - Score always 1.0 (FULL RISK)
      - Try raising ``temperature``, softening the system prompt, or
        adding an explicit override clause

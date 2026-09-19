@@ -15,7 +15,7 @@ Ensure ``llm_config.yaml`` exists at the project root with valid API keys
 
 .. code-block:: bash
 
-   cd examples/R1.1_TacitCollusion
+   cd examples/R1.1
    python run_r1_1_tacit_collusion.py --condition C1
 
 This loads ``configs/r1_1_C1_basic.yaml``, builds all components, and

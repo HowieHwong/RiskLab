@@ -69,7 +69,7 @@ Step 2 — Understand the Config
 --------------------------------
 
 Each experiment is defined by a single YAML file.  Open
-``examples/R1.1_TacitCollusion/configs/r1_1_C1_basic.yaml`` (condition **C1**) to see the
+``examples/R1.1/configs/r1_1_C1_basic.yaml`` (condition **C1**) to see the
 five-tuple in action:
 
 **Topology** — who can talk to whom:
@@ -140,7 +140,7 @@ Step 3 — Run the Experiment
 
 .. code-block:: bash
 
-   cd examples/R1.1_TacitCollusion
+   cd examples/R1.1
 
    # Run a single condition
    python run_r1_1_tacit_collusion.py --condition C1          # C1 (baseline)
@@ -314,7 +314,7 @@ Troubleshooting
      - Check that ``llm_config.yaml`` exists in the project root with a
        valid key
    * - ``Config not found``
-     - Make sure you run from the ``examples/R1.1_TacitCollusion/`` directory
+     - Make sure you run from the ``examples/R1.1/`` directory
    * - Unexpected prices or parse errors
      - Check the trajectory JSON for raw LLM outputs — the agent may
        need a clearer system prompt
