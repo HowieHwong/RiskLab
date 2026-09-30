@@ -77,6 +77,9 @@ class LLMAgent(Agent):
         Per-agent temperature override.
     max_tokens : int | None
         Per-agent max_tokens override.
+    llm_params : dict | None
+        Extra keyword arguments forwarded verbatim to every provider call,
+        e.g. ``{"extra_body": {"reasoning": {"effort": "high"}}}``.
 
     Examples
     --------
@@ -97,6 +100,8 @@ class LLMAgent(Agent):
         task_prompt: str = "",
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        llm_params: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> None:
         super().__init__(config)
         self.llm_config = llm_config or LLMConfig.from_env()
@@ -104,6 +109,10 @@ class LLMAgent(Agent):
         self.task_prompt = task_prompt
         self._temperature = temperature
         self._max_tokens = max_tokens
+        # ``build_agents_from_config`` forwards this to every registered agent
+        # class, so accepting it here is what keeps the generic "type: llm"
+        # configs (R3.2) loadable.
+        self._llm_params: Dict[str, Any] = dict(llm_params or {})
 
     # ------------------------------------------------------------------
     # System prompt construction
@@ -186,6 +195,7 @@ class LLMAgent(Agent):
             messages=messages,
             temperature=self._temperature,
             max_tokens=self._max_tokens,
+            **self._llm_params,
         )
 
         return {

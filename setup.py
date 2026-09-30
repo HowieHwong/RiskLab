@@ -15,6 +15,7 @@ setup(
     python_requires=">=3.9",
     install_requires=[
         "pyyaml>=6.0",
+        "numpy>=1.21",  # required by the risk detectors (e.g. tacit_collusion)
     ],
     extras_require={
         "openai": ["openai>=1.0"],

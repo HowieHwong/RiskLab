@@ -44,6 +44,10 @@ class AgentConfig:
     - ``provider``      : explicit provider name override (``None`` → auto-detect).
     - ``api_key``       : per-agent API key override (``None`` → use provider config).
     - ``api_base``      : per-agent API base URL override (``None`` → use provider config).
+    - ``llm_params``    : extra keyword arguments forwarded verbatim to the
+                          provider call, e.g. ``{"extra_body": {"reasoning":
+                          {"effort": "high"}}}`` to set a reasoning model's
+                          thinking effort.  ``None`` → send nothing extra.
     - ``observation_filter`` : controls what part of state is visible (info asymmetry).
     - ``action_space``  : list of permissible actions.
     - ``parameters``    : arbitrary extra key-value pairs.
@@ -61,6 +65,7 @@ class AgentConfig:
     provider: Optional[str] = None   # explicit provider name
     api_key: Optional[str] = None    # per-agent API key override
     api_base: Optional[str] = None   # per-agent API base override
+    llm_params: Optional[Dict[str, Any]] = None  # extra provider call kwargs
 
     observation_filter: Optional[str] = None  # controls what part of state is visible
     action_space: Optional[List[str]] = None

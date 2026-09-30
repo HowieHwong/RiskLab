@@ -11,11 +11,14 @@ Supported factories:
     - ``build_protocol_from_config``    — protocol from YAML
     - ``build_risks_from_config``       — risk detectors from YAML
     - ``build_experiment_from_config``  — full experiment assembly
+    - ``resolve_round_horizon``         — one source of truth for episode length
 """
 
 from __future__ import annotations
 
 import os
+import re
+import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
 from risklab.agents.base import Agent, AgentConfig
@@ -140,6 +143,7 @@ def build_agents_from_config(
                 task_prompt=task_prompt,
                 temperature=config.temperature,
                 max_tokens=config.max_tokens,
+                llm_params=config.llm_params,
             )
         else:
             # Default: generic LLMAgent
@@ -192,6 +196,184 @@ def load_experiment_config(config_path: str) -> Dict[str, Any]:
 
 
 # ======================================================================
+# Episode length
+# ======================================================================
+
+# A YAML declares its episode length in up to three places, and the agent
+# prompts usually repeat it in prose.  Nothing kept them in sync, so changing
+# the horizon meant editing four sites and silently corrupting the run if you
+# missed one (agents believing the game ends at round 10 play the end-game
+# defection at round 10 regardless of the real horizon).
+_ROUND_SITES = (
+    "environment.max_rounds",
+    "task.parameters.num_rounds",
+    "topology.flow.stop_conditions[*].value",
+)
+
+#: Placeholders substituted into prompts / descriptions.  Plain ``str.replace``
+#: is used rather than ``str.format`` because prompts routinely contain literal
+#: braces (JSON examples, f-string-looking templates) that would blow up.
+_ROUND_PLACEHOLDERS = ("{num_rounds}", "{total_rounds}", "{max_rounds}")
+
+_PROMPT_KEYS = ("system_prompt", "prompt", "task_prompt", "persona")
+
+
+def _fill_rounds(text: str, horizon: int) -> str:
+    """Replace every round placeholder in *text* with *horizon*."""
+    for token in _ROUND_PLACEHOLDERS:
+        text = text.replace(token, str(horizon))
+    return text
+
+
+def fill_prompt_placeholder(config: Dict[str, Any], token: str, value: Any) -> int:
+    """Substitute *token* with *value* in every prompt the agents actually read.
+
+    :func:`resolve_round_horizon` does this for the episode length.  An
+    experiment with a second quantity that must appear identically in the
+    config and in the prose — a budget ceiling, a production cost — needs the
+    same substitution over the same set of sites, and copying the list of
+    prompt keys into the caller is how the two drift apart: the config says 90
+    and the prompt still says 120, silently.
+
+    *config* is modified in place.  Returns the number of sites changed, so a
+    caller can fail loudly when it expected to rewrite a prompt and did not.
+    """
+    replacement = str(value)
+    changed = 0
+    for agent_cfg in config.get("agents") or []:
+        if not isinstance(agent_cfg, dict):
+            continue
+        for key in _PROMPT_KEYS:
+            text = agent_cfg.get(key)
+            if isinstance(text, str) and token in text:
+                agent_cfg[key] = text.replace(token, replacement)
+                changed += 1
+    task_cfg = config.get("task")
+    if isinstance(task_cfg, dict):
+        text = task_cfg.get("description")
+        if isinstance(text, str) and token in text:
+            task_cfg["description"] = text.replace(token, replacement)
+            changed += 1
+    return changed
+
+
+def _stop_condition_entries(config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Every ``{type: max_rounds, value: N}`` entry in the flow config."""
+    flow = (config.get("topology") or {}).get("flow") or {}
+    return [
+        sc
+        for sc in (flow.get("stop_conditions") or [])
+        if isinstance(sc, dict) and sc.get("type") == "max_rounds"
+    ]
+
+
+def resolve_round_horizon(
+    config: Dict[str, Any], num_rounds: Optional[int] = None
+) -> Optional[int]:
+    """Reconcile the episode length across the config and the prompts.
+
+    Reads the horizon from (in priority order) the explicit *num_rounds*
+    override, ``environment.max_rounds``, ``task.parameters.num_rounds``, or a
+    ``max_rounds`` stop condition; writes it back to every site that declared
+    one; and substitutes ``{num_rounds}`` (and its aliases) in agent prompts
+    and the task description.
+
+    *config* is modified in place.  Returns the horizon, or ``None`` when the
+    config declares no episode length and none was supplied.
+
+    Raises
+    ------
+    ValueError
+        If *num_rounds* is not a positive integer.
+    """
+    if num_rounds is not None:
+        num_rounds = int(num_rounds)
+        if num_rounds < 1:
+            raise ValueError(f"num_rounds must be >= 1, got {num_rounds}")
+
+    env_cfg = config.get("environment")
+    task_cfg = config.get("task")
+    task_params = (task_cfg or {}).get("parameters") or {}
+    stop_conditions = _stop_condition_entries(config)
+
+    # --- What does the config currently claim? ---
+    declared: Dict[str, int] = {}
+    if isinstance(env_cfg, dict) and env_cfg.get("max_rounds") is not None:
+        declared["environment.max_rounds"] = int(env_cfg["max_rounds"])
+    if task_params.get("num_rounds") is not None:
+        declared["task.parameters.num_rounds"] = int(task_params["num_rounds"])
+    for i, sc in enumerate(stop_conditions):
+        if sc.get("value") is not None:
+            declared[f"topology.flow.stop_conditions[{i}].value"] = int(sc["value"])
+
+    if num_rounds is None and len(set(declared.values())) > 1:
+        detail = ", ".join(f"{k}={v}" for k, v in sorted(declared.items()))
+        warnings.warn(
+            "Episode length is declared inconsistently and has been reconciled "
+            f"to environment.max_rounds: {detail}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+    if num_rounds is not None:
+        horizon = num_rounds
+    elif "environment.max_rounds" in declared:
+        horizon = declared["environment.max_rounds"]
+    elif declared:
+        horizon = next(iter(declared.values()))
+    else:
+        return None
+
+    # --- Write it back everywhere ---
+    if isinstance(env_cfg, dict):
+        env_cfg["max_rounds"] = horizon
+    if isinstance(task_cfg, dict) and (
+        "task.parameters.num_rounds" in declared or num_rounds is not None
+    ):
+        task_cfg.setdefault("parameters", {})["num_rounds"] = horizon
+    for sc in stop_conditions:
+        sc["value"] = horizon
+
+    # --- And in the prose the agents actually read ---
+    for agent_cfg in config.get("agents") or []:
+        if not isinstance(agent_cfg, dict):
+            continue
+        for key in _PROMPT_KEYS:
+            value = agent_cfg.get(key)
+            if isinstance(value, str):
+                agent_cfg[key] = _fill_rounds(value, horizon)
+    if isinstance(task_cfg, dict) and isinstance(task_cfg.get("description"), str):
+        task_cfg["description"] = _fill_rounds(task_cfg["description"], horizon)
+
+    return horizon
+
+
+def find_hardcoded_rounds(config: Dict[str, Any], horizon: int) -> List[str]:
+    """Prompt sites that still state a round count in prose, for linting.
+
+    Returns human-readable locations of any ``"<n> rounds"`` mention whose
+    number disagrees with *horizon* — the failure mode ``resolve_round_horizon``
+    exists to prevent, for configs not yet migrated to ``{num_rounds}``.
+    """
+    pattern = re.compile(r"\b(\d+)\s+rounds?\b", re.IGNORECASE)
+    offenders: List[str] = []
+    for agent_cfg in config.get("agents") or []:
+        if not isinstance(agent_cfg, dict):
+            continue
+        aid = agent_cfg.get("agent_id", "?")
+        for key in _PROMPT_KEYS:
+            value = agent_cfg.get(key)
+            if not isinstance(value, str):
+                continue
+            for match in pattern.finditer(value):
+                if int(match.group(1)) != horizon:
+                    offenders.append(
+                        f"agents[{aid}].{key}: {match.group(0)!r} != {horizon}"
+                    )
+    return offenders
+
+
+# ======================================================================
 # Environment factory
 # ======================================================================
 
@@ -211,7 +393,15 @@ def _ensure_environments_registered() -> None:
     from risklab.environments.competitive.homogeneous_goods_market import (
         HomogeneousGoodsMarket,
     )
+    from risklab.environments.competitive.bilateral_bargaining import (
+        BilateralBargaining,
+    )
+    from risklab.environments.competitive.subtask_selection import (
+        SubtaskSelection,
+    )
     register_environment("homogeneous_goods_market", HomogeneousGoodsMarket)
+    register_environment("bilateral_bargaining", BilateralBargaining)
+    register_environment("subtask_selection", SubtaskSelection)
 
     # from risklab.environments.cooperative.ad_pipeline import (
     #     AdPipelineEnvironment,
@@ -364,6 +554,14 @@ def build_risks_from_config(
         import risklab.risks.normative_deadlock  # noqa: F401
     except ImportError:
         pass
+    try:
+        import risklab.risks.information_asymmetry_exploitation  # noqa: F401
+    except ImportError:
+        pass
+    try:
+        import risklab.risks.competitive_task_avoidance  # noqa: F401
+    except ImportError:
+        pass
 
     risks: List[Risk] = []
     for rc in risk_configs:
@@ -451,6 +649,7 @@ def build_task_from_config(
 def build_experiment_from_config(
     config: Dict[str, Any],
     base_dir: Optional[str] = None,
+    num_rounds: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Build all experiment components from a parsed YAML config.
 
@@ -460,15 +659,23 @@ def build_experiment_from_config(
         Full experiment config (as returned by ``load_experiment_config``).
     base_dir : str, optional
         Base directory for resolving relative paths.
+    num_rounds : int, optional
+        Override the episode length.  Applied to the environment, the task,
+        the stop conditions *and* the agent prompts in one place — see
+        ``resolve_round_horizon``.
 
     Returns
     -------
     dict
         Dictionary with keys: ``experiment_id``, ``environment``,
         ``protocol``, ``agents``, ``task``, ``topology``, ``flow``,
-        ``risks``, ``output_dir``.
+        ``risks``, ``num_rounds``, ``output_dir``.
     """
     base_dir = base_dir or os.getcwd()
+
+    # Reconcile the episode length before anything reads it, so the
+    # environment, the stop conditions and the prompts cannot disagree.
+    horizon = resolve_round_horizon(config, num_rounds)
 
     # Experiment metadata
     exp_meta = config.get("experiment", {})
@@ -538,5 +745,6 @@ def build_experiment_from_config(
         "topology": topology,
         "flow": flow,
         "risks": risks,
+        "num_rounds": horizon,
         "output_dir": config.get("output_dir", "results"),
     }

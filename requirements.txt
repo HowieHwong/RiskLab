@@ -1,0 +1,16 @@
+# Runtime dependencies for RiskLab.
+# Mirrors setup.py: the `install_requires` core plus the LLM-client extras that
+# risklab/llm.py imports lazily (openai, anthropic) and the dev tooling.
+# Install with:  uv pip install -r requirements.txt
+
+# --- core (setup.py: install_requires) ---
+pyyaml>=6.0
+numpy>=1.21          # risk detectors, e.g. risklab/risks/tacit_collusion.py
+
+# --- LLM backends (setup.py: extras_require["all_llm"]) ---
+openai>=1.0
+anthropic>=0.20
+
+# --- dev (setup.py: extras_require["dev"]) ---
+pytest
+ruff
